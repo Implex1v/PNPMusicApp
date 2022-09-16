@@ -1,0 +1,41 @@
+version: "3.7"
+
+x-buildargs: &build_args
+  GIT_COMMIT: ${GIT_COMMIT:-'git-commit'}
+  BUILD_VERSION: ${GITVERSION_SEMVER:-'semver'}
+
+services:
+  ui:
+    image: ${CR_BASE:-local}/ui:${GITVERSION_SEMVER:-latest}
+    restart: unless-stopped
+    depends_on:
+    - api
+    build:
+      context: ./ui/
+      args:
+        <<: *build_args
+
+  # this builds or runs api/Dockerfile
+  api:
+    # path of the builded docker image
+    image: ${CR_BASE:-local}/api:${GITVERSION_SEMVER:-latest}
+    restart: unless-stopped
+    build: 
+      # path, where the Dockerfile is
+      context: ./api/
+      # gives args for commit...
+      args:
+        <<: *build_args
+    depends_on:
+    - db
+    networks:
+      - "db"
+  
+  db:
+    image: ${CR_BASE:-local}/db:${GITVERSION_SEMVER:-latest}
+    restart: unless-stopped
+    networks:
+      - "db"
+
+networks:
+  db:

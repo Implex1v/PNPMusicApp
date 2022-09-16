@@ -1,0 +1,14 @@
+name: api
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "api/**"
+  workflow_dispatch:
+    
+jobs:
+  build:
+    uses: Implex1v/PNPMusicApp/.github/workflows/_build.yml@main
+    with:
+      component: api

@@ -1,0 +1,14 @@
+name: ui
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "ui/**"
+  workflow_dispatch:
+    
+jobs:
+  build:
+    uses: Implex1v/PNPMusicApp/.github/workflows/_build.yml@main
+    with:
+      component: ui
