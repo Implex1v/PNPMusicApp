@@ -7,3 +7,4 @@ spring:
       password: password
       database: pnpmusicapp
       authentication-database: admin
+      auto-index-creation: true
