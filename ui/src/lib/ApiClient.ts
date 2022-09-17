@@ -11,8 +11,6 @@ export class ApiClient {
         this.fetch = fetch
         this.song = new SongClient(this.fetch)
     }
-
-
 }
 
 class SongClient {
