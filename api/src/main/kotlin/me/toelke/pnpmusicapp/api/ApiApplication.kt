@@ -4,7 +4,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-//@ConfigurationPropertiesScan("me.toelke.pnpmusicapp.api")
 class ApiApplication
 
 fun main(args: Array<String>) {

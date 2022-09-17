@@ -8,3 +8,7 @@ spring:
       database: pnpmusicapp
       authentication-database: admin
       auto-index-creation: true
+
+app:
+  file:
+    location: /tmp/app/
