@@ -4,7 +4,7 @@
 </script>
 
 <svelte:head>
-    <title>Song</title>
+    <title>Song - {data.name}</title>
 </svelte:head>
 
 <h3>Song: {data.name}</h3>

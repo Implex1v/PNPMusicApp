@@ -10,7 +10,6 @@ export const load: PageLoad = async({ params, fetch }) => {
     const song = await client.song.get(id)
 
     if(!song) {
-        console.log("throwing!")
         throw error(404, {message: `Song ${id} not found`})
     }
 
