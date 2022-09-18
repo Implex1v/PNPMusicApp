@@ -53,3 +53,7 @@ tasks.withType<Test> {
 		showStackTraces = true
 	}
 }
+
+tasks.getByName<Jar>("jar") {
+	enabled = false
+}
