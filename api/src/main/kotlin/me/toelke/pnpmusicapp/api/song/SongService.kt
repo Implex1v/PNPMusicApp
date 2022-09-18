@@ -29,7 +29,11 @@ class SongService(
             .then(Mono.just(fileName))
             .flatMap {
                 val songMono = get(id)
-                    .switchIfEmpty { Mono.error(NotFoundException("song not found")) }
+                    .switchIfEmpty {
+                        fileManager
+                            .deleteFile(fileName)
+                            .then(Mono.error(NotFoundException("song not found")))
+                    }
                 val detailMono = mp3Service.parseMp3(it)
 
                 Mono.zip(songMono, detailMono) { song , detail ->

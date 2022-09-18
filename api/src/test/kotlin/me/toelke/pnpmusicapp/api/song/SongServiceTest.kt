@@ -6,12 +6,18 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.every
 import io.mockk.mockk
+import me.toelke.pnpmusicapp.api.NotFoundException
 import me.toelke.pnpmusicapp.api.song.file.FileManager
 import me.toelke.pnpmusicapp.api.song.mp3.Mp3Service
 import me.toelke.pnpmusicapp.api.uuid
 import org.junit.jupiter.api.Test
+import org.springframework.core.io.buffer.DataBuffer
+import org.springframework.http.codec.multipart.FilePart
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toFlux
+import reactor.kotlin.test.expectError
+import reactor.test.StepVerifier
 
 @Suppress("ReactiveStreamsUnusedPublisher")
 internal class SongServiceTest {
@@ -21,6 +27,7 @@ internal class SongServiceTest {
     private val mp3Service = mockk<Mp3Service>()
     private val service = SongService(songRepository = repository, fileManager = manager, mp3Service = mp3Service)
     private val song = Song(id = uuid, name = "foo", tags = listOf("foo", "bar"))
+    private val detail = SongDetail("foo", "bar", 42, "baz")
 
     @Test
     fun `should create song`() {
@@ -78,5 +85,67 @@ internal class SongServiceTest {
         every { repository.deleteById(uuid) } returns Mono.empty()
 
         service.delete(id = uuid).block()
+    }
+
+    @Test
+    fun `should get file`() {
+        val fileName = "abc"
+        val dataFlux = mockk<DataBuffer>()
+        val flux = Flux.just(dataFlux)
+        every { manager.readFile("$fileName.mp3") } returns flux
+
+        val actual = service.getFile(fileName)
+
+        StepVerifier
+            .create(actual)
+            .expectNext(dataFlux)
+            .verifyComplete()
+    }
+
+    @Test
+    fun `should error on file`() {
+        val fileName = "abc"
+        every { manager.readFile("$fileName.mp3") } returns Flux.error(NotFoundException("file"))
+
+        val actual = service.getFile(fileName)
+
+        StepVerifier
+            .create(actual)
+            .expectError(NotFoundException::class)
+            .verify()
+    }
+
+    @Test
+    fun `should create file`() {
+        val filePart = mockk<FilePart>()
+        val filePartMono = Mono.just(filePart)
+        every { manager.writeFile("$uuid.mp3", filePartMono) } returns Mono.empty()
+        every { repository.findById(uuid) } returns Mono.just(song)
+        every { mp3Service.parseMp3("$uuid.mp3") } returns Mono.just(detail)
+        every { repository.save(song.copy(detail = detail)) } returns Mono.empty()
+
+        val actual = service.createFile(id = uuid, filePartMono)
+
+        StepVerifier
+            .create(actual)
+            .verifyComplete()
+    }
+
+    @Test
+    fun `should fail on song not found`() {
+        val filePart = mockk<FilePart>()
+        val filePartMono = Mono.just(filePart)
+        val fileName = "$uuid.mp3"
+        every { manager.writeFile(fileName, filePartMono) } returns Mono.empty()
+        every { repository.findById(uuid) } returns Mono.empty()
+        every { mp3Service.parseMp3(fileName) } returns Mono.just(detail)
+        every { manager.deleteFile(fileName) } returns Mono.empty()
+
+        val actual = service.createFile(id = uuid, filePartMono)
+
+        StepVerifier
+            .create(actual)
+            .expectError(NotFoundException::class)
+            .verify()
     }
 }

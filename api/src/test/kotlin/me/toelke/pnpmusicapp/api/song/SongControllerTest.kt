@@ -6,10 +6,16 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.every
 import io.mockk.mockk
+import me.toelke.pnpmusicapp.api.NotFoundException
 import me.toelke.pnpmusicapp.api.uuid
 import org.junit.jupiter.api.Test
+import org.springframework.core.io.buffer.DataBuffer
+import org.springframework.http.codec.multipart.FilePart
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toFlux
+import reactor.test.StepVerifier
+import reactor.test.StepVerifier.Step
 
 @Suppress("ReactiveStreamsUnusedPublisher")
 internal class SongControllerTest {
@@ -41,9 +47,12 @@ internal class SongControllerTest {
     fun `should get no song`() {
         every { service.get(uuid) } returns Mono.empty()
 
-        val actual = controller.get(song.id).block()
+        val actual = controller.get(song.id)
 
-        actual shouldBe null
+        StepVerifier
+            .create(actual)
+            .expectError(NotFoundException::class.java)
+            .verify()
     }
 
     @Test
@@ -74,5 +83,42 @@ internal class SongControllerTest {
         every { service.delete(uuid) } returns Mono.empty()
 
         controller.delete(id = uuid).block()
+    }
+
+    @Test
+    fun `should create file`() {
+        val filePart = Mono.just(mockk<FilePart>())
+        every { service.createFile(id = uuid, filePart) } returns Mono.empty()
+
+        val actual = controller.createFile(uuid, filePart)
+        StepVerifier
+            .create(actual)
+            .expectComplete()
+            .verify()
+    }
+
+    @Test
+    fun `should fail on create file`() {
+        val filePart = Mono.just(mockk<FilePart>())
+        every { service.createFile(id = uuid, filePart) } returns Mono.error(NotFoundException("song"))
+
+        val actual = controller.createFile(uuid, filePart)
+        StepVerifier
+            .create(actual)
+            .expectError(NotFoundException::class.java)
+            .verify()
+    }
+
+    @Test
+    fun `should get file`() {
+        val mock = mockk<DataBuffer>()
+        val dataBuffer = Flux.just(mock)
+        every { service.getFile(id = uuid) } returns dataBuffer
+
+        val actual = controller.getFile(id = uuid)
+        StepVerifier
+            .create(actual)
+            .expectNext(mock)
+            .verifyComplete()
     }
 }
