@@ -9,27 +9,32 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
+import kotlin.io.path.deleteExisting
 
 @Service
 class FileManager {
     private val location = "/tmp/app"
 
     fun writeFile(fileName: String, content: Mono<FilePart>): Mono<Void> {
-        val path = Path.of(location).run {
-            createDirectories()
-            resolve(fileName)
-        }
-
         return content.flatMap {
+            val path = getPath(fileName)
             DataBufferUtils.write(it.content(), path)
-        }.then()
+        }
     }
 
     fun readFile(fileName: String): Flux<DataBuffer> {
-        val path = Path.of(location).run {
-            createDirectories()
-            resolve(fileName)
-        }
+        val path = getPath(fileName)
         return DataBufferUtils.read(path, DefaultDataBufferFactory(), 4096)
+    }
+
+    fun getPath(fileName: String): Path = Path.of(location).run {
+        createDirectories()
+        resolve(fileName)
+    }
+
+    fun deleteFile(fileName: String): Mono<Void> {
+        val path = getPath(fileName)
+        path.deleteExisting()
+        return Mono.empty()
     }
 }

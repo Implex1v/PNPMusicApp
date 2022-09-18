@@ -11,7 +11,7 @@ data class Song(
     val id: String = uuid(),
     @Indexed
     val name: String,
-    val location: String,
+    val detail: SongDetail? = null,
     @Indexed
     val tags: List<String> = emptyList(),
 )

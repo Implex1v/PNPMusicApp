@@ -6,6 +6,8 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.every
 import io.mockk.mockk
+import me.toelke.pnpmusicapp.api.song.file.FileManager
+import me.toelke.pnpmusicapp.api.song.mp3.Mp3Service
 import me.toelke.pnpmusicapp.api.uuid
 import org.junit.jupiter.api.Test
 import reactor.core.publisher.Mono
@@ -15,8 +17,10 @@ import reactor.kotlin.core.publisher.toFlux
 internal class SongServiceTest {
     private val uuid = uuid()
     private val repository = mockk<SongRepository>()
-    private val service = SongService(repository)
-    private val song = Song(id = uuid, name = "foo", location = "home/bar.mp3", tags = listOf("foo", "bar"))
+    private val manager = mockk<FileManager>()
+    private val mp3Service = mockk<Mp3Service>()
+    private val service = SongService(songRepository = repository, fileManager = manager, mp3Service = mp3Service)
+    private val song = Song(id = uuid, name = "foo", tags = listOf("foo", "bar"))
 
     @Test
     fun `should create song`() {

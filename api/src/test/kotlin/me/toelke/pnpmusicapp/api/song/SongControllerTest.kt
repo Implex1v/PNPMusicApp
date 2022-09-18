@@ -16,7 +16,7 @@ internal class SongControllerTest {
     private val uuid = uuid()
     private val service = mockk<SongService>()
     private val controller = SongController(service)
-    private val song = Song(id = uuid, name = "foo", location = "home/bar.mp3", tags = listOf("foo", "bar"))
+    private val song = Song(id = uuid, name = "foo", tags = listOf("foo", "bar"))
 
     @Test
     fun `should create song`() {
