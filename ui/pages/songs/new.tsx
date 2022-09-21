@@ -5,8 +5,8 @@ import {ApiClient} from "../../lib/ApiClient";
 import {Song} from "../../lib/Models";
 import {useRouter} from "next/router";
 import {useState} from "react";
-import TagsInput from 'react-tagsinput';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import SongTags from "../../components/input/SongTags";
 
 export default function Songs() {
     const { register, handleSubmit } = useForm();
@@ -28,24 +28,6 @@ export default function Songs() {
         }
     }
 
-    const changeTags = (tags) => {
-        setTags(tags)
-    }
-
-    const renderTag = (props) => {
-        let {tag, key, disabled, onRemove, classNameRemove, getTagDisplayValue, ...other} = props
-        return (
-            <span key={key} {...other}>
-                {getTagDisplayValue(tag)}
-                {!disabled &&
-                    <a className="ms-1 text-light remove-tag" onClick={(e) => onRemove(key)}>
-                        x
-                    </a>
-                }
-            </span>
-        )
-    }
-
     return (
         <Layout>
             <Head>
@@ -61,14 +43,7 @@ export default function Songs() {
                 </div>
                 <div className="mb-3">
                     <label htmlFor="tags" className="form-label">Tags (e.g. horror, town)</label>
-                    <TagsInput
-                        value={tags}
-                        onChange={changeTags}
-                        inputProps={{className: "form-control mt-2"}}
-                        tagProps={{className: "badge bg-success m-1"}}
-                        onlyUnique={true}
-                        renderTag={renderTag}
-                    />
+                    <SongTags setTags={setTags} tags={tags} />
                 </div>
                 <div className="mb-3">
                     <label htmlFor="file" className="form-label">File (*.mp3)</label>
