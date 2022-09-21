@@ -1,7 +1,7 @@
 export type Song = {
-    id: string,
+    id?: string,
     name: string,
-    detail: SongDetail | undefined,
+    detail?: SongDetail | null,
     tags: Array<string>,
 }
 
