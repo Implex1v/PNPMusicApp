@@ -5,7 +5,6 @@ import {ApiClient} from "../../lib/ApiClient";
 import {Song} from "../../lib/Models";
 import {useRouter} from "next/router";
 import {useState} from "react";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import SongTags from "../../components/input/SongTags";
 
 export default function Songs() {
@@ -31,7 +30,7 @@ export default function Songs() {
     return (
         <Layout>
             <Head>
-                <title>Songs</title>
+                <title>Song - New</title>
             </Head>
             <div>
                 <h3>Create a new song</h3>
@@ -43,7 +42,7 @@ export default function Songs() {
                 </div>
                 <div className="mb-3">
                     <label htmlFor="tags" className="form-label">Tags (e.g. horror, town)</label>
-                    <SongTags setTags={setTags} tags={tags} />
+                    <SongTags setTags={setTags} tags={tags} disabled={false} />
                 </div>
                 <div className="mb-3">
                     <label htmlFor="file" className="form-label">File (*.mp3)</label>
