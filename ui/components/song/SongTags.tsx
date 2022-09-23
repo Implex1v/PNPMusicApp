@@ -1,7 +1,7 @@
 import TagsInput from 'react-tagsinput';
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faTag, faXmark} from "@fortawesome/free-solid-svg-icons";
-import SongTag from "../song/SongTag";
+import SongTag from "./SongTag";
 
 type SongTags = {
     tags: Array<String>,

@@ -5,7 +5,7 @@ import {ApiClient} from "../../lib/ApiClient";
 import {Song} from "../../lib/Models";
 import {useRouter} from "next/router";
 import {useState} from "react";
-import SongTags from "../../components/input/SongTags";
+import SongTags from "../../components/song/SongTags";
 
 export default function Songs() {
     const { register, handleSubmit } = useForm();

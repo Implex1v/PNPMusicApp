@@ -12,3 +12,10 @@ spring:
 app:
   file:
     location: /tmp/app/
+
+logging:
+  level:
+    reactor:
+      netty:
+        http:
+          client: DEBUG

@@ -3,7 +3,7 @@ import {useEffect, useState} from "react";
 import {ApiClient} from "../../lib/ApiClient";
 import {useRouter} from "next/router";
 import {Song} from "../../lib/Models";
-import SongTags from "../../components/input/SongTags";
+import SongTags from "../../components/song/SongTags";
 import Head from "next/head";
 import SongDetails from "../../components/song/SongDetails";
 
