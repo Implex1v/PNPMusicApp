@@ -40,3 +40,18 @@ function getFirstArrayEntryOrDefault(val: any, key: string, defaultData: string)
 
     return data[0]
 }
+
+export function buildQueryFromText(text: string): string {
+    const parts = text.split("=")
+    const queryParts = []
+
+    if(parts.length % 2 != 0) {
+        throw new Error("Query parts length is not even")
+    }
+
+    for(let i = 0; i < parts.length; i += 2) {
+        queryParts.push(`${encodeURIComponent(parts[i])}=${encodeURIComponent(parts[i+1])}`)
+    }
+
+    return queryParts.join("&")
+}

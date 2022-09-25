@@ -6,3 +6,7 @@ body {
     text-decoration: none;
     cursor: pointer;
 }
+
+.tag-link {
+    text-decoration: none;
+}
