@@ -1,6 +1,8 @@
 package me.toelke.pnpmusicapp.api.song
 
 import me.toelke.pnpmusicapp.api.NotFoundException
+import me.toelke.pnpmusicapp.api.config.SearchFilter
+import org.springframework.data.domain.Pageable
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @RestController
@@ -19,7 +22,8 @@ class SongController(
     val service: SongService,
 ) {
     @GetMapping
-    fun getAll() = service.getAll()
+    fun getAll(pageable: Pageable, searchFilter: SearchFilter) =
+        service.getAll(pageable = pageable, searchFilter = searchFilter)
 
     @PostMapping
     fun create(@RequestBody body: Song) = service.create(song = body)

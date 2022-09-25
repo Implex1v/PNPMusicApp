@@ -7,11 +7,13 @@ import io.kotest.matchers.shouldNotBe
 import io.mockk.every
 import io.mockk.mockk
 import me.toelke.pnpmusicapp.api.NotFoundException
+import me.toelke.pnpmusicapp.api.config.SearchFilter
 import me.toelke.pnpmusicapp.api.song.file.FileManager
 import me.toelke.pnpmusicapp.api.song.mp3.Mp3Service
 import me.toelke.pnpmusicapp.api.uuid
 import org.junit.jupiter.api.Test
 import org.springframework.core.io.buffer.DataBuffer
+import org.springframework.data.domain.Pageable
 import org.springframework.http.codec.multipart.FilePart
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -60,9 +62,9 @@ internal class SongServiceTest {
     @Test
     fun `should get many songs`() {
         val song2 = song.copy(id = uuid())
-        every { repository.findAll() } returns listOf(song, song2).toFlux()
+        every { repository.find(Pageable.unpaged(), SearchFilter(emptyMap())) } returns listOf(song, song2).toFlux()
 
-        val actual = service.getAll().collectList().block()
+        val actual = service.getAll(Pageable.unpaged(), SearchFilter(emptyMap())).collectList().block()
 
         actual shouldNotBe null
         val notNull = actual!!
@@ -72,9 +74,9 @@ internal class SongServiceTest {
 
     @Test
     fun `should get no songs`() {
-        every { repository.findAll() } returns emptyList<Song>().toFlux()
+        every { repository.find(Pageable.unpaged(), SearchFilter(emptyMap())) } returns emptyList<Song>().toFlux()
 
-        val actual = service.getAll().collectList().block()
+        val actual = service.getAll(Pageable.unpaged(), SearchFilter(emptyMap())).collectList().block()
 
         actual shouldNotBe null
         actual.shouldBeEmpty()

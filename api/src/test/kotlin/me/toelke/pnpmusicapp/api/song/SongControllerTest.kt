@@ -7,15 +7,16 @@ import io.kotest.matchers.shouldNotBe
 import io.mockk.every
 import io.mockk.mockk
 import me.toelke.pnpmusicapp.api.NotFoundException
+import me.toelke.pnpmusicapp.api.config.SearchFilter
 import me.toelke.pnpmusicapp.api.uuid
 import org.junit.jupiter.api.Test
 import org.springframework.core.io.buffer.DataBuffer
+import org.springframework.data.domain.Pageable
 import org.springframework.http.codec.multipart.FilePart
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toFlux
 import reactor.test.StepVerifier
-import reactor.test.StepVerifier.Step
 
 @Suppress("ReactiveStreamsUnusedPublisher")
 internal class SongControllerTest {
@@ -58,9 +59,9 @@ internal class SongControllerTest {
     @Test
     fun `should get many songs`() {
         val song2 = song.copy(id = uuid())
-        every { service.getAll() } returns listOf(song, song2).toFlux()
+        every { service.getAll(Pageable.unpaged(), SearchFilter(emptyMap())) } returns listOf(song, song2).toFlux()
 
-        val actual = controller.getAll().collectList().block()
+        val actual = controller.getAll(Pageable.unpaged(), SearchFilter(emptyMap())).collectList().block()
 
         actual shouldNotBe null
         val notNull = actual!!
@@ -70,9 +71,9 @@ internal class SongControllerTest {
 
     @Test
     fun `should get no songs`() {
-        every { service.getAll() } returns emptyList<Song>().toFlux()
+        every { service.getAll(Pageable.unpaged(), SearchFilter(emptyMap())) } returns emptyList<Song>().toFlux()
 
-        val actual = controller.getAll().collectList().block()
+        val actual = controller.getAll(Pageable.unpaged(), SearchFilter(emptyMap())).collectList().block()
 
         actual shouldNotBe null
         actual.shouldBeEmpty()

@@ -18,4 +18,10 @@ logging:
     reactor:
       netty:
         http:
-          client: DEBUG
+          # client: DEBUG # enable netty request logging
+    org:
+      springframework:
+        data:
+          mongodb:
+            core:
+              # ReactiveMongoTemplate: DEBUG # enable printing of mongo queries
