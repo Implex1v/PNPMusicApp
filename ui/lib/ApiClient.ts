@@ -1,8 +1,6 @@
 import type {Song} from "./Models";
 import axios from "axios";
 
-type Fetch = (info: RequestInfo, init?: RequestInit) => Promise<Response>
-
 export class ApiClient {
     public readonly song: SongClient
 
@@ -10,6 +8,14 @@ export class ApiClient {
         this.song = new SongClient(baseUrl)
     }
 }
+
+export type Pageable = {
+    page: string,
+    size: string,
+    sort: string
+}
+
+export type Filter = Map<String, Array<String>>
 
 class SongClient {
     private readonly url: string
@@ -27,8 +33,9 @@ class SongClient {
         return await response.data as Song
     }
 
-    async getAll(): Promise<Array<Song>> {
-        const response = await axios.get(`${this.url}/song`)
+    async getAll(filter: Filter | undefined = undefined, pageable: Pageable | undefined = undefined): Promise<Array<Song>> {
+        const query = buildQuery(filter, pageable)
+        const response = await axios.get(`${this.url}/song?${query}`)
         if (response.status < 200 || response.status >= 400) {
             return []
         }
@@ -64,4 +71,29 @@ class SongClient {
             throw new Error("Failed to update song: " + response.data)
         }
     }
+}
+
+function buildQuery(filter: Filter | undefined = undefined, pageable: Pageable | undefined = undefined): string {
+    const queryParameters = []
+
+    if(filter) {
+        filter.forEach( (values, key) => {
+            const trueValues = Array.isArray(values) ? values : [values]
+            trueValues.forEach((value) => {
+                queryParameters.push(
+                    `${encodeURIComponent(key.toString())}=${encodeURIComponent(value.toString())}`
+                )
+            })
+        })
+    }
+
+    if(pageable) {
+        Object
+            .keys(pageable)
+            .forEach( (key) => {
+                queryParameters.push(`${key}=${pageable[key]}`)
+            })
+    }
+
+    return queryParameters.join("&")
 }

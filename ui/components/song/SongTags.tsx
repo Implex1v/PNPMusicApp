@@ -1,6 +1,4 @@
 import TagsInput from 'react-tagsinput';
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faTag, faXmark} from "@fortawesome/free-solid-svg-icons";
 import SongTag from "./SongTag";
 
 type SongTags = {
@@ -17,7 +15,7 @@ export default function SongTags({tags, setTags, disabled = false}: SongTags) {
     const renderTag = (props) => {
         let {tag, disabled, onRemove, getTagDisplayValue} = props
         return (
-            <SongTag tag={getTagDisplayValue(tag)} disabled={!disabled} onRemove={onRemove} />
+            <SongTag tag={getTagDisplayValue(tag)} disabled={!disabled} onRemove={onRemove} key={tag}/>
         )
     }
 

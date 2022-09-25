@@ -4,21 +4,31 @@ import {useEffect, useState} from "react";
 import {ApiClient} from "../../lib/ApiClient";
 import {Song} from "../../lib/Models";
 import SongRow from "../../components/song/SongRow";
+import {useRouter} from "next/router";
+import {buildFilter, buildPageable} from "../../lib/Helper";
 
 export default function Songs() {
     const [songs, setSongs] = useState<Array<Song>>([])
     const [loading, setLoading] = useState(true)
+    const router = useRouter()
 
     useEffect(() => {
         const fetch = async () => {
+            if(!router.isReady) {
+                return
+            }
+
+            const pageable = buildPageable(router.query)
+            const filter = buildFilter(router.query)
+
             const client = new ApiClient()
-            const songs = await client.song.getAll()
+            const songs = await client.song.getAll(filter, pageable)
             setSongs(songs)
             setLoading(false)
         }
 
         fetch().then()
-    }, [])
+    }, [router])
 
     const data = songs.map( it => {
         return(<SongRow key={it.id} song={it} />)
