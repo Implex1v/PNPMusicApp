@@ -6,6 +6,7 @@ import {Song} from "../../lib/Models";
 import SongRow from "../../components/song/SongRow";
 import {useRouter} from "next/router";
 import {buildFilter, buildPageable, buildQueryFromText} from "../../lib/Helper";
+import SongSearchText from "../../components/song/SongSearchText";
 
 export default function Songs() {
     const [songs, setSongs] = useState<Array<Song>>([])
@@ -36,12 +37,13 @@ export default function Songs() {
     })
 
     const search = async() => {
+        if(searchText.length == 0) {
+            await router.push("/songs")
+            return
+        }
+
         const query = buildQueryFromText(searchText)
         await router.push(`/songs?${query}`)
-    }
-
-    const handleSetSearch = async(event) => {
-        setSearchText(event.target.value)
     }
 
     if(loading) {
@@ -54,10 +56,7 @@ export default function Songs() {
                 </Head>
                 <div className="m-4">
                     <h3>All Songs</h3>
-                    <div className="d-flex mt-3 mb-3">
-                        <input type="text" className="form-control" placeholder="name=foo or tags=city" value={searchText} onChange={handleSetSearch} />
-                        <button className="btn btn-primary ms-3" onClick={search}>Search</button>
-                    </div>
+                    <SongSearchText search={searchText} setSearch={setSearchText} submit={search} />
                     <table className="table text-light">
                         <thead>
                         <tr>
