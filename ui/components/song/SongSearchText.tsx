@@ -12,7 +12,7 @@ export default function SongSearchText({search, setSearch, submit}: SongSearchTe
 
     const handleOnChange = function (event) {
         const val = event.target.value
-        if(!regex.test(val)) {
+        if(val.length > 0 && !regex.test(val)) {
             setValid(false)
         } else {
             setValid(true)
@@ -32,11 +32,11 @@ export default function SongSearchText({search, setSearch, submit}: SongSearchTe
 
     return (
         <div>
-            {valid == false && <span className="text-danger">Invalid search pattern.</span>}
             <div className="d-flex mt-3 mb-3">
                 <input type="text" className="form-control" placeholder="name=foo or tags=city" value={search} onChange={handleOnChange} />
                 <button className="btn btn-primary ms-3" onClick={handleOnSubmit} disabled={!valid}>Search</button>
             </div>
+            {valid == false && <span className="text-danger fs-6 fw-light">Invalid search pattern.</span>}
         </div>
     )
 }

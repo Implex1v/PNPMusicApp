@@ -1,17 +1,19 @@
 import Layout from "../../components/Layout";
 import Head from "next/head";
 import {useEffect, useState} from "react";
-import {ApiClient} from "../../lib/ApiClient";
+import {ApiClient, Pageable} from "../../lib/ApiClient";
 import {Song} from "../../lib/Models";
 import SongRow from "../../components/song/SongRow";
 import {useRouter} from "next/router";
 import {buildFilter, buildPageable, buildQueryFromText} from "../../lib/Helper";
 import SongSearchText from "../../components/song/SongSearchText";
+import Pagination from "../../components/Pagination";
 
 export default function Songs() {
     const [songs, setSongs] = useState<Array<Song>>([])
     const [loading, setLoading] = useState(true)
     const [searchText, setSearchText] = useState("")
+    const [pageable, setPageable] = useState<Pageable>()
     const router = useRouter()
 
     useEffect(() => {
@@ -27,6 +29,7 @@ export default function Songs() {
             const songs = await client.song.getAll(filter, pageable)
             setSongs(songs)
             setLoading(false)
+            setPageable(pageable)
         }
 
         fetch().then()
@@ -57,18 +60,21 @@ export default function Songs() {
                 <div className="m-4">
                     <h3>All Songs</h3>
                     <SongSearchText search={searchText} setSearch={setSearchText} submit={search} />
-                    <table className="table text-light">
-                        <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Tags</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {data}
-                        </tbody>
-                    </table>
+                    <Pagination pageable={pageable} baseUri={"/songs"}>
+                        <table className="table text-light">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Tags</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {data}
+                            </tbody>
+                        </table>
+
+                    </Pagination>
                 </div>
             </Layout>
         )
