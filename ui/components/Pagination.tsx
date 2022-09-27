@@ -1,31 +1,32 @@
-import {Pageable} from "../lib/ApiClient";
+import {PageableResult} from "../lib/ApiClient";
 import Link from "next/link";
+import type {Song} from "../lib/Models";
 
 export type PaginationProp = {
-    pageable: Pageable,
+    result: PageableResult<Song>,
     baseUri: string,
     children: any,
 }
 
-function hasPrevious(pageable: Pageable) {
-    return Number(pageable.page) > 1
+function hasPrevious(result: PageableResult<Song>) {
+    return result.page > 0
 }
 
-function hasNext(pageable: Pageable) {
-    return true
+function hasNext(result: PageableResult<Song>) {
+    return ((result.page + 1) * result.size) < result.total
 }
 
-function buildNextLink(pageable: Pageable, baseUri: string) {
-    return `${baseUri}?page=${Number(pageable.page) + 1}&size=${pageable.size}&sort=${pageable.sort}`
+function buildNextLink(result: PageableResult<Song>, baseUri: string) {
+    return `${baseUri}?page=${result.page + 1}&size=${result.size}&sort=${result.sort}`
 }
 
-function buildPreviousLink(pageable: Pageable, baseUri: string) {
-    return `${baseUri}?page=${Number(pageable.page) - 1}&size=${pageable.size}&sort=${pageable.sort}`
+function buildPreviousLink(result: PageableResult<Song>, baseUri: string) {
+    return `${baseUri}?page=${result.page - 1}&size=${result.size}&sort=${result.sort}`
 }
 
-export default function Pagination({ pageable, baseUri, children }: PaginationProp) {
-    const previous = hasPrevious(pageable)
-    const next = hasNext(pageable)
+export default function Pagination({ result, baseUri, children }: PaginationProp) {
+    const previous = hasPrevious(result)
+    const next = hasNext(result)
     const previousClassName = "page-item" + (previous ? "" : " disabled")
     const nextClassName = "page-item" + (next ? "" : " disabled")
 
@@ -36,7 +37,7 @@ export default function Pagination({ pageable, baseUri, children }: PaginationPr
                 <ul className="pagination">
                     <li className={previousClassName}>
                         {previous ?
-                            <Link href={buildPreviousLink(pageable, baseUri)}>
+                            <Link href={buildPreviousLink(result, baseUri)}>
                                 <a className="page-link">Previous</a>
                             </Link>
                             :
@@ -44,11 +45,11 @@ export default function Pagination({ pageable, baseUri, children }: PaginationPr
                         }
                     </li>
                     <li className="page-item active">
-                        <span className="page-link">{pageable.page}</span>
+                        <span className="page-link">{result.page}</span>
                     </li>
                     <li className={nextClassName}>
                         {next ?
-                            <Link href={buildNextLink(pageable, baseUri)}>
+                            <Link href={buildNextLink(result, baseUri)}>
                                 <a className="page-link">Next</a>
                             </Link>
                             :

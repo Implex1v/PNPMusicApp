@@ -1,7 +1,7 @@
 import Layout from "../../components/Layout";
 import Head from "next/head";
 import {useEffect, useState} from "react";
-import {ApiClient, Pageable} from "../../lib/ApiClient";
+import {ApiClient, PageableResult} from "../../lib/ApiClient";
 import {Song} from "../../lib/Models";
 import SongRow from "../../components/song/SongRow";
 import {useRouter} from "next/router";
@@ -10,10 +10,9 @@ import SongSearchText from "../../components/song/SongSearchText";
 import Pagination from "../../components/Pagination";
 
 export default function Songs() {
-    const [songs, setSongs] = useState<Array<Song>>([])
+    const [songs, setSongs] = useState<PageableResult<Song>>(undefined)
     const [loading, setLoading] = useState(true)
     const [searchText, setSearchText] = useState("")
-    const [pageable, setPageable] = useState<Pageable>()
     const router = useRouter()
 
     useEffect(() => {
@@ -29,15 +28,10 @@ export default function Songs() {
             const songs = await client.song.getAll(filter, pageable)
             setSongs(songs)
             setLoading(false)
-            setPageable(pageable)
         }
 
         fetch().then()
     }, [router])
-
-    const data = songs.map( it => {
-        return(<SongRow key={it.id} song={it} />)
-    })
 
     const search = async() => {
         if(searchText.length == 0) {
@@ -52,6 +46,9 @@ export default function Songs() {
     if(loading) {
         return(<p>Loading</p>)
     } else {
+        const data = songs.items.map( it => {
+            return(<SongRow key={it.id} song={it} />)
+        })
         return (
             <Layout>
                 <Head>
@@ -60,7 +57,7 @@ export default function Songs() {
                 <div className="m-4">
                     <h3>All Songs</h3>
                     <SongSearchText search={searchText} setSearch={setSearchText} submit={search} />
-                    <Pagination pageable={pageable} baseUri={"/songs"}>
+                    <Pagination result={songs} baseUri={"/songs"}>
                         <table className="table text-light">
                             <thead>
                             <tr>
@@ -73,7 +70,6 @@ export default function Songs() {
                             {data}
                             </tbody>
                         </table>
-
                     </Pagination>
                 </div>
             </Layout>

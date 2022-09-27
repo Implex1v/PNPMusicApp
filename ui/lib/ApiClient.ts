@@ -12,7 +12,15 @@ export class ApiClient {
 export type Pageable = {
     page: string,
     size: string,
-    sort: string
+    sort: string,
+}
+
+export type PageableResult<T> = {
+    items: Array<T>,
+    total: number,
+    page: number,
+    size: number,
+    sort: string,
 }
 
 export type Filter = Map<String, Array<String>>
@@ -33,13 +41,27 @@ class SongClient {
         return await response.data as Song
     }
 
-    async getAll(filter: Filter | undefined = undefined, pageable: Pageable | undefined = undefined): Promise<Array<Song>> {
+    async getAll(filter: Filter | undefined = undefined, pageable: Pageable | undefined = undefined): Promise<PageableResult<Song>> {
         const query = buildQuery(filter, pageable)
         const response = await axios.get(`${this.url}/song?${query}`)
         if (response.status < 200 || response.status >= 400) {
-            return []
+            return {
+                items: [],
+                total: 0,
+                page: 0,
+                size: 0,
+                sort: "",
+            }
         }
-        return response.data as Array<Song>
+
+        const data = response.data
+        return {
+            items: data as Array<Song>,
+            total: Number(response.headers["x-total-count"] ?? `${data.length}`),
+            page: Number(pageable.page),
+            size: Number(pageable.size),
+            sort: pageable.sort,
+        }
     }
 
     async delete(id: string): Promise<void> {

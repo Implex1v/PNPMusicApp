@@ -3,7 +3,7 @@ import {Filter, Pageable} from "./ApiClient";
 
 export function buildPageable(query: ParsedUrlQuery): Pageable {
     return {
-        page: getFirstArrayEntryOrDefault(query, "page", "1"),
+        page: getFirstArrayEntryOrDefault(query, "page", "0"),
         size: getFirstArrayEntryOrDefault(query, "size", "20"),
         sort: getFirstArrayEntryOrDefault(query, "sort", ""),
     }
