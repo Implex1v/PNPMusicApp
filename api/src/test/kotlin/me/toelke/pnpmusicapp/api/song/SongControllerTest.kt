@@ -2,12 +2,14 @@ package me.toelke.pnpmusicapp.api.song
 
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.equality.shouldNotBeEqualToComparingFields
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.every
 import io.mockk.mockk
 import me.toelke.pnpmusicapp.api.NotFoundException
 import me.toelke.pnpmusicapp.api.config.SearchFilter
+import me.toelke.pnpmusicapp.api.util.PageableResult
 import me.toelke.pnpmusicapp.api.uuid
 import org.junit.jupiter.api.Test
 import org.springframework.core.io.buffer.DataBuffer
@@ -59,24 +61,31 @@ internal class SongControllerTest {
     @Test
     fun `should get many songs`() {
         val song2 = song.copy(id = uuid())
-        every { service.getAll(Pageable.unpaged(), SearchFilter(emptyMap())) } returns listOf(song, song2).toFlux()
+        val result = PageableResult(listOf(song, song2).toFlux(), Mono.just(2))
+        every { service.getAll(Pageable.unpaged(), SearchFilter(emptyMap())) } returns result
 
-        val actual = controller.getAll(Pageable.unpaged(), SearchFilter(emptyMap())).collectList().block()
+        val actual = controller.getAll(Pageable.unpaged(), SearchFilter(emptyMap()))
+        val response = actual.block()
 
-        actual shouldNotBe null
-        val notNull = actual!!
-        notNull.shouldContain(song)
+        response shouldNotBe null
+        response?.headers?.get(SongController.XTotalCount)!!.first() shouldBe "2"
+        val notNull = response.body!!.collectList().block()
+        notNull!!.shouldContain(song)
         notNull.shouldContain(song2)
     }
 
     @Test
     fun `should get no songs`() {
-        every { service.getAll(Pageable.unpaged(), SearchFilter(emptyMap())) } returns emptyList<Song>().toFlux()
+        val result = PageableResult(Flux.empty<Song>(), Mono.just(0))
+        every { service.getAll(Pageable.unpaged(), SearchFilter(emptyMap())) } returns result
 
-        val actual = controller.getAll(Pageable.unpaged(), SearchFilter(emptyMap())).collectList().block()
+        val actual = controller.getAll(Pageable.unpaged(), SearchFilter(emptyMap()))
+        val response = actual.block()
 
-        actual shouldNotBe null
-        actual.shouldBeEmpty()
+        response shouldNotBe null
+        response?.headers?.get(SongController.XTotalCount)!!.first() shouldBe "0"
+        val notNull = response.body!!.collectList().block()
+        notNull!!.isEmpty() shouldBe true
     }
 
     @Test

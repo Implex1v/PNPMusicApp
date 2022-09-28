@@ -10,6 +10,7 @@ import me.toelke.pnpmusicapp.api.NotFoundException
 import me.toelke.pnpmusicapp.api.config.SearchFilter
 import me.toelke.pnpmusicapp.api.song.file.FileManager
 import me.toelke.pnpmusicapp.api.song.mp3.Mp3Service
+import me.toelke.pnpmusicapp.api.util.PageableResult
 import me.toelke.pnpmusicapp.api.uuid
 import org.junit.jupiter.api.Test
 import org.springframework.core.io.buffer.DataBuffer
@@ -62,24 +63,27 @@ internal class SongServiceTest {
     @Test
     fun `should get many songs`() {
         val song2 = song.copy(id = uuid())
-        every { repository.find(Pageable.unpaged(), SearchFilter(emptyMap())) } returns listOf(song, song2).toFlux()
+        val result = PageableResult(listOf(song, song2).toFlux(), Mono.just(2))
+        every { repository.find(Pageable.unpaged(), SearchFilter(emptyMap())) } returns result
 
-        val actual = service.getAll(Pageable.unpaged(), SearchFilter(emptyMap())).collectList().block()
+        val actual = service.getAll(Pageable.unpaged(), SearchFilter(emptyMap()))
 
         actual shouldNotBe null
-        val notNull = actual!!
-        notNull.shouldContain(song)
-        notNull.shouldContain(song2)
+        actual.total.block() shouldBe 2
+        val items = actual.items.collectList().block()!!
+        items shouldContain song
+        items shouldContain song2
     }
 
     @Test
     fun `should get no songs`() {
-        every { repository.find(Pageable.unpaged(), SearchFilter(emptyMap())) } returns emptyList<Song>().toFlux()
+        val result = PageableResult(Flux.empty<Song>(), Mono.just(0))
+        every { repository.find(Pageable.unpaged(), SearchFilter(emptyMap())) } returns result
 
-        val actual = service.getAll(Pageable.unpaged(), SearchFilter(emptyMap())).collectList().block()
+        val actual = service.getAll(Pageable.unpaged(), SearchFilter(emptyMap()))
 
-        actual shouldNotBe null
-        actual.shouldBeEmpty()
+        actual.total.block() shouldBe 0
+        actual.items.collectList().block()!!.isEmpty() shouldBe true
     }
 
     @Test

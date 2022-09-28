@@ -22,6 +22,10 @@ import reactor.core.publisher.Mono
 class SongController(
     val service: SongService,
 ) {
+    companion object {
+        const val XTotalCount = "x-total-count"
+    }
+
     @GetMapping
     fun getAll(pageable: Pageable, searchFilter: SearchFilter): Mono<ResponseEntity<Flux<Song>>>  {
         val data = service.getAll(pageable = pageable, searchFilter = searchFilter)
@@ -29,7 +33,7 @@ class SongController(
         return data.total.flatMap {
             val resp = ResponseEntity
                 .ok()
-                .header("x-total-count", it.toString())
+                .header(XTotalCount, it.toString())
                 .body(data.items)
             Mono.just(resp)
         }
