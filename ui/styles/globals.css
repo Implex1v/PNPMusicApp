@@ -10,3 +10,8 @@ body {
 .tag-link {
     text-decoration: none;
 }
+
+.svg-inline--fa {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+}

@@ -1,6 +1,8 @@
 import {PageableResult} from "../lib/ApiClient";
 import Link from "next/link";
 import type {Song} from "../lib/Models";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {faAngleLeft, faAngleRight, faAnglesLeft, faAnglesRight} from "@fortawesome/free-solid-svg-icons";
 
 export type PaginationProp = {
     result: PageableResult<Song>,
@@ -33,15 +35,29 @@ export default function Pagination({ result, baseUri, children }: PaginationProp
     return (
         <div>
             {children}
-            <nav className="d-flex justify-content-center">
+            <nav className="d-flex justify-content-center pt-2">
                 <ul className="pagination">
+                    <li className="page-item">
+                        <Link href={`${baseUri}?page=0&size=${result.size}&sort=${result.sort}`}>
+                            <a className="page-link">
+                                <FontAwesomeIcon icon={faAnglesLeft} />
+                                First
+                            </a>
+                        </Link>
+                    </li>
                     <li className={previousClassName}>
                         {previous ?
                             <Link href={buildPreviousLink(result, baseUri)}>
-                                <a className="page-link">Previous</a>
+                                <a className="page-link">
+                                    <FontAwesomeIcon icon={faAngleLeft} />
+                                    Previous
+                                </a>
                             </Link>
                             :
-                            <span className="page-link">Previous</span>
+                            <span className="page-link">
+                                <FontAwesomeIcon icon={faAngleLeft} />
+                                Previous
+                            </span>
                         }
                     </li>
                     <li className="page-item active">
@@ -50,11 +66,25 @@ export default function Pagination({ result, baseUri, children }: PaginationProp
                     <li className={nextClassName}>
                         {next ?
                             <Link href={buildNextLink(result, baseUri)}>
-                                <a className="page-link">Next</a>
+                                <a className="page-link">
+                                    Next
+                                    <FontAwesomeIcon icon={faAngleRight} />
+                                </a>
                             </Link>
                             :
-                            <span className="page-link">Next</span>
+                            <span className="page-link">
+                                Next
+                                <FontAwesomeIcon icon={faAngleRight} />
+                            </span>
                         }
+                    </li>
+                    <li className="page-item">
+                        <Link href={`${baseUri}?page=${Math.floor(result.total / result.size)}&size=${result.size}&sort=${result.sort}`}>
+                            <a className="page-link">
+                                Last
+                                <FontAwesomeIcon icon={faAnglesRight} />
+                            </a>
+                        </Link>
                     </li>
                 </ul>
             </nav>
