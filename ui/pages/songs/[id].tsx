@@ -11,36 +11,45 @@ export default function GetSong() {
     const router = useRouter()
     const id = router.query.id as string
     const [ song, setSong ] = useState<Song>()
+    const [ ready, setReady ] = useState(false)
     const [ error, setError ] = useState<Error>(undefined)
 
     useEffect(() => {
         const data = async() => {
+            if(!router.isReady) {
+                return
+            }
+
             const client = new ApiClient()
             const song = await client.song.get(id)
             setSong(song)
+            setReady(true)
         }
 
         data().catch(it => setError(it))
-    })
+    }, [id, router])
 
-    return (
-        <Layout>
-            <Head>
-                <title>Song - {id}</title>
-            </Head>
-            <h2 className="mt-5 mb-5">
-                Song {id}
-            </h2>
-            {song &&
-                <div>
-                    <table className="table text-light">
-                        <thead>
+    if(!ready) {
+        return (<p>Loading ...</p>)
+    } else {
+        return (
+            <Layout>
+                <Head>
+                    <title>Song - {id}</title>
+                </Head>
+                <h2 className="mt-5 mb-5">
+                    Song {id}
+                </h2>
+                {song &&
+                    <div>
+                        <table className="table text-light">
+                            <thead>
                             <tr>
                                 <th>Name</th>
                                 <th>Value</th>
                             </tr>
-                        </thead>
-                        <tbody>
+                            </thead>
+                            <tbody>
                             <tr>
                                 <td>Name</td>
                                 <td>{song.name}</td>
@@ -68,10 +77,11 @@ export default function GetSong() {
                                     </audio>
                                 </td>
                             </tr>
-                        </tbody>
-                    </table>
-                </div>
-            }
-        </Layout>
-    )
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </Layout>
+        )
+    }
 }

@@ -57,7 +57,7 @@ export default function Songs() {
                 <div className="m-4">
                     <h3>All Songs</h3>
                     <SongSearchText search={searchText} setSearch={setSearchText} submit={search} />
-                    <Pagination result={songs} baseUri={"/songs"}>
+                    <Pagination<Song> result={songs} baseUri={"/songs"}>
                         <table className="table text-light">
                             <thead>
                             <tr>

@@ -1,32 +1,31 @@
 import {PageableResult} from "../lib/ApiClient";
 import Link from "next/link";
-import type {Song} from "../lib/Models";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faAngleLeft, faAngleRight, faAnglesLeft, faAnglesRight} from "@fortawesome/free-solid-svg-icons";
 
-export type PaginationProp = {
-    result: PageableResult<Song>,
+export type PaginationProp<T> = {
+    result: PageableResult<T>,
     baseUri: string,
     children: any,
 }
 
-function hasPrevious(result: PageableResult<Song>) {
+function hasPrevious<T>(result: PageableResult<T>) {
     return result.page > 0
 }
 
-function hasNext(result: PageableResult<Song>) {
+function hasNext<T>(result: PageableResult<T>) {
     return ((result.page + 1) * result.size) < result.total
 }
 
-function buildNextLink(result: PageableResult<Song>, baseUri: string) {
+function buildNextLink<T>(result: PageableResult<T>, baseUri: string) {
     return `${baseUri}?page=${result.page + 1}&size=${result.size}&sort=${result.sort}`
 }
 
-function buildPreviousLink(result: PageableResult<Song>, baseUri: string) {
+function buildPreviousLink<T>(result: PageableResult<T>, baseUri: string) {
     return `${baseUri}?page=${result.page - 1}&size=${result.size}&sort=${result.sort}`
 }
 
-export default function Pagination({ result, baseUri, children }: PaginationProp) {
+export default function Pagination<T>({ result, baseUri, children }: PaginationProp<T>) {
     const previous = hasPrevious(result)
     const next = hasNext(result)
     const previousClassName = "page-item" + (previous ? "" : " disabled")
