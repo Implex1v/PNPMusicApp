@@ -4,7 +4,8 @@ import me.toelke.pnpmusicapp.api.NotFoundException
 import me.toelke.pnpmusicapp.api.config.SearchFilter
 import me.toelke.pnpmusicapp.api.song.file.FileManager
 import me.toelke.pnpmusicapp.api.song.mp3.Mp3Service
-import me.toelke.pnpmusicapp.api.uuid
+import me.toelke.pnpmusicapp.api.util.AbstractService
+import me.toelke.pnpmusicapp.api.util.PageableResult
 import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.data.domain.Pageable
 import org.springframework.http.codec.multipart.FilePart
@@ -18,12 +19,9 @@ class SongService(
     val songRepository: SongRepository,
     val fileManager: FileManager,
     val mp3Service: Mp3Service,
-) {
-    fun getAll(pageable: Pageable, searchFilter: SearchFilter) = songRepository.find(pageable, searchFilter)
-    fun create(song: Song) = songRepository.insert(song.copy(id = uuid()))
-    fun get(id: String) = songRepository.findById(id)
-    fun delete(id: String) = songRepository.deleteById(id)
-    fun update(song: Song) = songRepository.save(song)
+): AbstractService<Song>(songRepository) {
+    override fun getAll(pageable: Pageable, searchFilter: SearchFilter): Flux<PageableResult<Song>>
+        = songRepository.find(pageable, searchFilter)
 
     fun createFile(id: String, file: Mono<FilePart>): Mono<Void> {
         val fileName = "$id.mp3"

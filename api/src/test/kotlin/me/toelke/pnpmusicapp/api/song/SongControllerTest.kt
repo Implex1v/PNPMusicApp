@@ -7,6 +7,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.mockk.every
 import io.mockk.mockk
+import me.toelke.pnpmusicapp.api.Helper
 import me.toelke.pnpmusicapp.api.NotFoundException
 import me.toelke.pnpmusicapp.api.config.SearchFilter
 import me.toelke.pnpmusicapp.api.util.PageableResult
@@ -62,13 +63,13 @@ internal class SongControllerTest {
     fun `should get many songs`() {
         val song2 = song.copy(id = uuid())
         val result = PageableResult(listOf(song, song2).toFlux(), Mono.just(2))
-        every { service.getAll(Pageable.unpaged(), SearchFilter(emptyMap())) } returns result
+        every { service.getAll(Pageable.unpaged(), SearchFilter(emptyMap())) } returns Flux.just(result)
 
         val actual = controller.getAll(Pageable.unpaged(), SearchFilter(emptyMap()))
         val response = actual.block()
 
         response shouldNotBe null
-        response?.headers?.get(SongController.XTotalCount)!!.first() shouldBe "2"
+        response?.headers?.get(Helper.XTotalCount)!!.first() shouldBe "2"
         val notNull = response.body!!.collectList().block()
         notNull!!.shouldContain(song)
         notNull.shouldContain(song2)
@@ -77,13 +78,13 @@ internal class SongControllerTest {
     @Test
     fun `should get no songs`() {
         val result = PageableResult(Flux.empty<Song>(), Mono.just(0))
-        every { service.getAll(Pageable.unpaged(), SearchFilter(emptyMap())) } returns result
+        every { service.getAll(Pageable.unpaged(), SearchFilter(emptyMap())) } returns Flux.just(result)
 
         val actual = controller.getAll(Pageable.unpaged(), SearchFilter(emptyMap()))
         val response = actual.block()
 
         response shouldNotBe null
-        response?.headers?.get(SongController.XTotalCount)!!.first() shouldBe "0"
+        response?.headers?.get(Helper.XTotalCount)!!.first() shouldBe "0"
         val notNull = response.body!!.collectList().block()
         notNull!!.isEmpty() shouldBe true
     }

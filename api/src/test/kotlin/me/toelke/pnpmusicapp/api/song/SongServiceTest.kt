@@ -1,6 +1,5 @@
 package me.toelke.pnpmusicapp.api.song
 
-import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -64,9 +63,9 @@ internal class SongServiceTest {
     fun `should get many songs`() {
         val song2 = song.copy(id = uuid())
         val result = PageableResult(listOf(song, song2).toFlux(), Mono.just(2))
-        every { repository.find(Pageable.unpaged(), SearchFilter(emptyMap())) } returns result
+        every { repository.find(Pageable.unpaged(), SearchFilter(emptyMap())) } returns Flux.just(result)
 
-        val actual = service.getAll(Pageable.unpaged(), SearchFilter(emptyMap()))
+        val actual = service.getAll(Pageable.unpaged(), SearchFilter(emptyMap())).blockFirst()!!
 
         actual shouldNotBe null
         actual.total.block() shouldBe 2
@@ -78,9 +77,9 @@ internal class SongServiceTest {
     @Test
     fun `should get no songs`() {
         val result = PageableResult(Flux.empty<Song>(), Mono.just(0))
-        every { repository.find(Pageable.unpaged(), SearchFilter(emptyMap())) } returns result
+        every { repository.find(Pageable.unpaged(), SearchFilter(emptyMap())) } returns Flux.just(result)
 
-        val actual = service.getAll(Pageable.unpaged(), SearchFilter(emptyMap()))
+        val actual = service.getAll(Pageable.unpaged(), SearchFilter(emptyMap())).blockFirst()!!
 
         actual.total.block() shouldBe 0
         actual.items.collectList().block()!!.isEmpty() shouldBe true
