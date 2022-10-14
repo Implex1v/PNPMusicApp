@@ -1,0 +1,33 @@
+### create song
+POST http://localhost:8080/song/
+Content-Type: application/json
+
+{
+  "name": "Song 3",
+  "tags": [
+    "a",
+    "b",
+    "c"
+  ],
+  "detail": null
+}
+
+### get songs
+GET http://localhost:8080/song/
+
+### create playlist
+POST http://localhost:8080/playlist/
+Content-Type: application/json
+
+{
+  "name": "My Awesome Playlist",
+  "tags": [
+    "foo",
+    "bar"
+  ],
+  "songs": [
+    "92cab642-56b2-42ef-8c7e-52204d9c90d6",
+    "35ecfe61-a77b-452c-897c-672b39d2621d",
+    "04305d18-3c46-409e-bb70-75ecd8f1c535"
+  ]
+}
