@@ -104,16 +104,16 @@ class PlaylistClient {
         this.url = baseUrl
     }
 
-    async get(id: string): Promise<Playlist> {
+    async get(id: string): Promise<Playlist<string>> {
         const response = await axios.get(`${this.url}/playlist/${id}`)
         if (response.status < 200 || response.status >= 400) {
             throw new Error(`Response was ${response.status}`)
         }
 
-        return await response.data as Playlist
+        return await response.data as Playlist<string>
     }
 
-    async getAll(filter: Filter | undefined = undefined, pageable: Pageable | undefined = undefined): Promise<PageableResult<Playlist>> {
+    async getAll(filter: Filter | undefined = undefined, pageable: Pageable | undefined = undefined): Promise<PageableResult<Playlist<string>>> {
         const query = buildQuery(filter, pageable)
         const response = await axios.get(`${this.url}/playlist?${query}`)
 
@@ -123,7 +123,7 @@ class PlaylistClient {
 
         const data = response.data
         return {
-            items: data as Array<Playlist>,
+            items: data as Array<Playlist<string>>,
             total: Number(response.headers["x-total-count"] ?? `${data.length}`),
             page: Number(pageable.page),
             size: Number(pageable.size),

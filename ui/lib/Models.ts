@@ -12,9 +12,9 @@ export type SongDetail = {
     seconds: number,
 }
 
-export type Playlist = {
+export type Playlist<T> = {
     id?: string,
     name: string,
     tags: Array<String>,
-    songs: Array<String>,
+    songs: Array<T>,
 }
