@@ -1,11 +1,13 @@
-import type {Song} from "./Models";
+import type {Playlist, Song} from "./Models";
 import axios from "axios";
 
 export class ApiClient {
     public readonly song: SongClient
+    public readonly playlist: PlaylistClient
 
     constructor(baseUrl: string = "http://localhost:8080") {
         this.song = new SongClient(baseUrl)
+        this.playlist = new PlaylistClient(baseUrl)
     }
 }
 
@@ -91,6 +93,41 @@ class SongClient {
         const response = await axios.post(`${this.url}/song/${id}/file`, form)
         if (response.status < 200 || response.status >= 400) {
             throw new Error("Failed to update song: " + response.data)
+        }
+    }
+}
+
+class PlaylistClient {
+    private readonly url: string
+
+    constructor(baseUrl: string) {
+        this.url = baseUrl
+    }
+
+    async get(id: string): Promise<Playlist> {
+        const response = await axios.get(`${this.url}/playlist/${id}`)
+        if (response.status < 200 || response.status >= 400) {
+            throw new Error(`Response was ${response.status}`)
+        }
+
+        return await response.data as Playlist
+    }
+
+    async getAll(filter: Filter | undefined = undefined, pageable: Pageable | undefined = undefined): Promise<PageableResult<Playlist>> {
+        const query = buildQuery(filter, pageable)
+        const response = await axios.get(`${this.url}/playlist?${query}`)
+
+        if (response.status < 200 || response.status >= 400) {
+            throw new Error(`Response was ${response.status}`)
+        }
+
+        const data = response.data
+        return {
+            items: data as Array<Playlist>,
+            total: Number(response.headers["x-total-count"] ?? `${data.length}`),
+            page: Number(pageable.page),
+            size: Number(pageable.size),
+            sort: pageable.sort,
         }
     }
 }

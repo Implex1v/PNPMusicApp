@@ -16,14 +16,16 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-
 @RestController
 @RequestMapping("/playlist")
 class PlaylistController(
     val service: PlaylistService
 ) {
     @PostMapping
-    fun create(@RequestBody body: Playlist) = service.create(obj = body.copy(id = uuid()))
+    fun create(@RequestBody body: Playlist): Mono<Playlist> {
+        val playlist = service.create(obj = body.copy(id = uuid()))
+        return playlist
+    }
 
     @GetMapping("/{id}")
     fun get(@PathVariable id: String) = service.get(id = id)
@@ -48,3 +50,4 @@ class PlaylistController(
     @DeleteMapping("/{id}")
     fun delete(@PathVariable id: String) = service.delete(id)
 }
+

@@ -11,3 +11,10 @@ export type SongDetail = {
     artist: string,
     seconds: number,
 }
+
+export type Playlist = {
+    id?: string,
+    name: string,
+    tags: Array<String>,
+    songs: Array<String>,
+}
