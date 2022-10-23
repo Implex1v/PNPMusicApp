@@ -61,7 +61,9 @@ export default function GetPlaylist() {
                                 </tr>
                             </tbody>
                         </table>
-                        <PlaylistPlayer playlist={playlist} />
+                        <div className="col-md-6">
+                            <PlaylistPlayer playlist={playlist} />
+                        </div>
                     </div>
                 }
             </Layout>

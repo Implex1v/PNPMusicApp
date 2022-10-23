@@ -15,7 +15,7 @@ export default function SongTags({tags, setTags, disabled = false}: SongTags) {
     const renderTag = (props) => {
         let {tag, disabled, onRemove, getTagDisplayValue} = props
         return (
-            <SongTag tag={getTagDisplayValue(tag)} disabled={!disabled} onRemove={onRemove} key={tag}/>
+            <SongTag tag={getTagDisplayValue(tag)} disabled={disabled} onRemove={onRemove} key={tag}/>
         )
     }
 
