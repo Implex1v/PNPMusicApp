@@ -55,3 +55,19 @@ export function buildQueryFromText(text: string): string {
 
     return queryParts.join("&")
 }
+
+export function toHHMMSS(totalSeconds: number) {
+    let hours = Math.floor(totalSeconds / 3600);
+    let minutes = Math.floor((totalSeconds - (hours * 3600)) / 60);
+    let seconds = totalSeconds - (hours * 3600) - (minutes * 60);
+
+    let sHours = hours < 10 ? "0"+hours : hours+""
+    let sMinutes = minutes < 10 ? "0"+minutes : minutes+""
+    let sSeconds = seconds < 10 ? "0"+seconds : seconds+""
+
+    if(hours > 0) {
+        return sHours + ":" + sMinutes + ":" +sSeconds;
+    } else {
+        return sMinutes + ":" + sSeconds
+    }
+}

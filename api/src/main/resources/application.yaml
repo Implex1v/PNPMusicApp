@@ -11,7 +11,7 @@ spring:
 
 app:
   file:
-    location: /tmp/app/
+    location: /opt/pnpmusicapp/songs/
 
 logging:
   level:

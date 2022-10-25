@@ -17,19 +17,16 @@ services:
 
   # this builds or runs api/Dockerfile
   api:
-    # path of the builded docker image
     image: ${CR_BASE:-local}/api:${GITVERSION_SEMVER:-latest}
     restart: unless-stopped
     build: 
-      # path, where the Dockerfile is
       context: ./api/
-      # gives args for commit...
       args:
         <<: *build_args
     depends_on:
     - db
     networks:
-      - "db"
+    - "db"
   
   db:
     image: ${CR_BASE:-local}/db:${GITVERSION_SEMVER:-latest}
@@ -63,3 +60,6 @@ services:
 
 networks:
   db:
+
+volumes:
+  songs:

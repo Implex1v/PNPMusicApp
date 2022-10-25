@@ -42,9 +42,10 @@ export default function GetPlaylist() {
                     Playlist {playlist.name}
                 </h2>
                 {playlist &&
-                    <div>
-                        <table className="table text-white">
-                            <tbody>
+                    <div className="row">
+                        <div className="col-md-6">
+                            <table className="table text-white">
+                                <tbody>
                                 <tr>
                                     <td>Id</td>
                                     <td>{playlist.id}</td>
@@ -59,8 +60,9 @@ export default function GetPlaylist() {
                                         <SongTags disabled={true} tags={playlist.tags} setTags={() => {}} />
                                     </td>
                                 </tr>
-                            </tbody>
-                        </table>
+                                </tbody>
+                            </table>
+                        </div>
                         <div className="col-md-6">
                             <PlaylistPlayer playlist={playlist} />
                         </div>
