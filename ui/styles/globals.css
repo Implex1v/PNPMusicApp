@@ -17,7 +17,11 @@ body {
 }
 
 .player {
-    background-color: #2596be;
+    background-color: #515152;
+}
+
+.player .track-list {
+    background-color: #303030;
 }
 
 .clickable {

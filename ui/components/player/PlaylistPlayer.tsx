@@ -5,6 +5,12 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faPause, faPlay, faRotateRight} from "@fortawesome/free-solid-svg-icons";
 import {toHHMMSS} from "../../lib/Helper";
 
+/**
+ * Component for playing a playlist
+ * @param playlist The playlist to play
+ * @constructor
+ * cp: <https://www.w3schools.com/tags/ref_av_dom.asp>
+ **/
 export default function PlaylistPlayer({ playlist }: {playlist: Playlist<Song>}) {
     const [currentSong, setCurrentSong] = useState<Song>(playlist.songs[0])
     const [isLoop, setLoop] = useState<boolean>(true)
@@ -60,13 +66,22 @@ export default function PlaylistPlayer({ playlist }: {playlist: Playlist<Song>})
         player.current.play().then()
     }
 
+    function onEnded() {
+        if(isLoop) {
+            return
+        }
+
+        setPlaying(false)
+    }
+
     return (
-        <div className="player p-2">
-            <div className="row">
+        <div className="player">
+            <div>
                 <audio id="player" src={`http://localhost:8080/song/${currentSong.id}/file`}
                        ref={player} loop={isLoop} onTimeUpdate={onProgress} preload="auto" onCanPlay={onLoad}
+                       onEnded={onEnded}
                 />
-                <div className="row">
+                <div className="row p-3">
                     <div className="col-md-11 offset-1">
                         <span style={{fontWeight: "bold"}}>
                         {currentSong.detail ?
@@ -85,7 +100,7 @@ export default function PlaylistPlayer({ playlist }: {playlist: Playlist<Song>})
                     <div className="col-md-11 d-flex flex-row">
                         <span className="me-2">{toHHMMSS(currentTime)}</span>
                         <div className="progress flex-fill mt-1">
-                            <div className="progress-bar bg-info" role="progressbar"
+                            <div className="progress-bar bg-primary" role="progressbar"
                                  aria-valuenow={player.current?.currentTime ?? 0} aria-valuemin={0}
                                  aria-valuemax={currentSong.detail?.seconds ?? 1} style={{width: `${percentPlayed}%`}}/>
                         </div>
@@ -94,7 +109,7 @@ export default function PlaylistPlayer({ playlist }: {playlist: Playlist<Song>})
                     <div className="col-md-1">
                     </div>
                 </div>
-                <div className="mt-4">
+                <div className="p-3 track-list">
                     {tracks}
                 </div>
             </div>
