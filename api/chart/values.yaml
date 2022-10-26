@@ -1,0 +1,36 @@
+replicaCount: 1
+baseDomain: cloud.example.com
+
+image:
+  repository: nginx
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+imagePullSecret: pull-secret
+nameOverride: ""
+fullnameOverride: ""
+podAnnotations: {}
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: "public"
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+
+resources:
+   limits:
+     cpu: 50m
+     memory: 128Mi
+   requests:
+     cpu: 100m
+     memory: 256Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
