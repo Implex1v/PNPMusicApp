@@ -12,3 +12,7 @@ jobs:
     uses: Implex1v/PNPMusicApp/.github/workflows/_build.yml@main
     with:
       component: ui
+    secrets:
+      cr: ${{ secrets.CR }}
+      cr_token: ${{ secrets.GITHUB_TOKEN }}
+      cr_user: ${{ secrets.CR_USER }}
