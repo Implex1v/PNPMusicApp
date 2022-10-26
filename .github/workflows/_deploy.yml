@@ -62,6 +62,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Kubernetes login
         run: |
+          mkdir ~/.kube
           echo "${{ secrets.kube_config }}" > ~/.kube/config
       - name: Render values.yaml
         uses: cuchi/jinja2-action@v1.2.0
