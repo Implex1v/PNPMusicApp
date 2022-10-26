@@ -1,0 +1,92 @@
+name: _deploy
+
+on:
+  workflow_call:
+    inputs:
+      component:
+        description: The component to build
+        type: string
+        required: true
+    secrets:
+      cr:
+        description: The container registry to use (default is GitHub)
+        required: true
+      cr_token:
+        description: The container registry token
+        required: true
+      cr_user:
+        description: The registry user
+        required: true
+      domain:
+        description: The domain to deploy to
+        required: true
+      kube_config:
+        description: The kube config
+        required: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  COMPONENT: ${{ inputs.component }}
+
+jobs:
+  version:
+    runs-on: ubuntu-22.04
+    outputs:
+      semver: ${{ steps.gitversion.outputs.semVer }}
+    steps:
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0.9.13
+        with:
+          versionSpec: "5.x"
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # For gitversion
+      # https://github.com/GitTools/actions/blob/main/docs/examples/github/gitversion/index.md
+      - id: gitversion
+        name: Determine Version
+        uses: gittools/actions/gitversion/execute@v0.9.13
+        with:
+          useConfigFile: true
+  
+  deploy:
+    runs-on: ubuntu-22.04
+    env:
+      VERSION: ${{ needs.version.outputs.semver }}
+      NAMESPACE: pnpmusicapp
+    steps:
+      - uses: actions/checkout@v3
+      - name: Kubernetes login
+        run: |
+          echo "${{ secrets.kube_config }}" > ~/.kube/config
+      - name: Render values.yaml
+        uses: cuchi/jinja2-action@v1.2.0
+        with:
+          template: ${{ inputs.component }}/chart/values.j2
+          output_file: ${{ inputs.component }}/chart/values.override.yaml
+          strict: true
+          variables: |
+            base_domain=${{ secrets.domain }}
+            image=${{ secrets.cr }}/pnpmusicapp-${{ inputs.component }}
+      - name: Kubernetes deploy
+        working-directory: ${{ inputs.component }}/chart
+        id: helm_deploy
+        run: |
+          set -ex
+          helm dependency update
+          helm lint .
+          helm package \
+            --version "${VERSION}" \
+            --app-version "${VERSION}" \
+            .
+          helm upgrade -i --wait \
+            -n ${NAMESPACE} --create-namespace \
+            --version ${VERSION} \
+            -f values.yaml \
+            -f values.override.yaml \
+            api \
+            api-${VERSION}.tgz
+          helm test api -n ${NAMESPACE} --logs --timeout 6m0s
+      # ---

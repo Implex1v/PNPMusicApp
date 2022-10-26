@@ -16,3 +16,14 @@ jobs:
       cr: ${{ secrets.CR }}
       cr_token: ${{ secrets.GITHUB_TOKEN }}
       cr_user: ${{ secrets.CR_USER }}
+
+  deploy:
+    uses: Implex1v/PNPMusicApp/.github/workflows/_deploy.yml@main
+    with:
+      component: api
+    secrets:
+      cr: ${{ secrets.CR }}
+      cr_token: ${{ secrets.GITHUB_TOKEN }}
+      cr_user: ${{ secrets.CR_USER }}
+      domain: ${{ secrets.BASE_DOMAIN }}
+      kube_config: ${{ secrets.KUBE_CONFIG }}
