@@ -32,7 +32,6 @@ env:
 jobs:
   build:
     runs-on: ubuntu-22.04
-    needs: version
     env:
       CR_BASE: ${{ secrets.cr }}
       GITVERSION_SEMVER: ${{ needs.version.outputs.semver }}
