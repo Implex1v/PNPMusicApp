@@ -2,11 +2,11 @@ version: "3.7"
 
 x-buildargs: &build_args
   GIT_COMMIT: ${GIT_COMMIT:-'git-commit'}
-  BUILD_VERSION: ${GITVERSION_SEMVER:-'semver'}
+  BUILD_VERSION: ${BUILD_VERSION:-'semver'}
 
 services:
   ui:
-    image: ${CR_BASE:-local}/pnpmusicapp-ui:${GITVERSION_SEMVER:-latest}
+    image: ${CR_BASE:-local}/pnpmusicapp-ui:${BUILD_VERSION:-latest}
     restart: unless-stopped
     depends_on:
     - api
@@ -17,7 +17,7 @@ services:
 
   # this builds or runs api/Dockerfile
   api:
-    image: ${CR_BASE:-local}/pnpmusicapp-api:${GITVERSION_SEMVER:-latest}
+    image: ${CR_BASE:-local}/pnpmusicapp-api:${BUILD_VERSION:-latest}
     restart: unless-stopped
     build: 
       context: ./api/
@@ -29,7 +29,7 @@ services:
     - "db"
   
   db:
-    image: ${CR_BASE:-local}/pnpmusicapp-db:${GITVERSION_SEMVER:-latest}
+    image: ${CR_BASE:-local}/pnpmusicapp-db:${BUILD_VERSION:-latest}
     restart: unless-stopped
     networks:
       - "db"
