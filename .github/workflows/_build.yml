@@ -7,6 +7,10 @@ on:
         description: The component to build
         type: string
         required: true
+      version:
+        description: The current version
+        type: string
+        required: true
     secrets:
       cr:
         description: The container registry to use (default is GitHub)
@@ -26,25 +30,6 @@ env:
   COMPONENT: ${{ inputs.component }}
 
 jobs:
-  version:
-    runs-on: ubuntu-22.04
-    outputs:
-      semver: ${{ steps.gitversion.outputs.semVer }}
-    steps:
-      - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v0.9.13
-        with:
-          versionSpec: "5.x"
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0 # For gitversion
-      # https://github.com/GitTools/actions/blob/main/docs/examples/github/gitversion/index.md
-      - id: gitversion
-        name: Determine Version
-        uses: gittools/actions/gitversion/execute@v0.9.13
-        with:
-          useConfigFile: true
-
   build:
     runs-on: ubuntu-22.04
     needs: version
@@ -52,7 +37,7 @@ jobs:
       CR_BASE: ${{ secrets.cr }}
       GITVERSION_SEMVER: ${{ needs.version.outputs.semver }}
       GIT_COMMIT: ${{ github.sha }}
-      BUILD_VERSION: ${{ needs.version.outputs.semver }}
+      BUILD_VERSION: ${{ inputs.version }}
     steps:
       #------ 
       - uses: actions/checkout@v3

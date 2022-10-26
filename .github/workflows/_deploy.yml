@@ -7,6 +7,10 @@ on:
         description: The component to build
         type: string
         required: true
+      version:
+        description: The current version
+        type: string
+        required: true
     secrets:
       cr:
         description: The container registry to use (default is GitHub)
@@ -32,31 +36,10 @@ env:
   COMPONENT: ${{ inputs.component }}
 
 jobs:
-  version:
-    runs-on: ubuntu-22.04
-    outputs:
-      semver: ${{ steps.gitversion.outputs.semVer }}
-    steps:
-      - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v0.9.13
-        with:
-          versionSpec: "5.x"
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0 # For gitversion
-      # https://github.com/GitTools/actions/blob/main/docs/examples/github/gitversion/index.md
-      - id: gitversion
-        name: Determine Version
-        uses: gittools/actions/gitversion/execute@v0.9.13
-        with:
-          useConfigFile: true
-  
   deploy:
     runs-on: ubuntu-22.04
-    needs:
-    - version
     env:
-      VERSION: ${{ needs.version.outputs.semver }}
+      VERSION: ${{ inputs.version }}
       NAMESPACE: pnpmusicapp
     steps:
       - uses: actions/checkout@v3
