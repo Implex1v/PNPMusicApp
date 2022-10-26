@@ -19,6 +19,8 @@ jobs:
 
   deploy:
     uses: Implex1v/PNPMusicApp/.github/workflows/_deploy.yml@main
+    needs:
+    - build
     with:
       component: api
     secrets:

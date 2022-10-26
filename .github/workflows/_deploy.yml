@@ -41,7 +41,7 @@ jobs:
         uses: gittools/actions/gitversion/setup@v0.9.13
         with:
           versionSpec: "5.x"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v2
         with:
           fetch-depth: 0 # For gitversion
       # https://github.com/GitTools/actions/blob/main/docs/examples/github/gitversion/index.md
