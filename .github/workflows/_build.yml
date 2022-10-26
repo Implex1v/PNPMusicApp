@@ -7,16 +7,16 @@ on:
         description: The component to build
         type: string
         required: true
-    # secrets:
-    #   cr:
-    #     description: The container registry to use (default is GitHub)
-    #     required: true
-    #   cr_token:
-    #     description: The container registry token
-    #     required: true
-    #   cr_user:
-    #     description: The registry user
-    #     required: true
+    secrets:
+      cr:
+        description: The container registry to use (default is GitHub)
+        required: true
+      cr_token:
+        description: The container registry token
+        required: true
+      cr_user:
+        description: The registry user
+        required: true
 
 defaults:
   run:
@@ -27,7 +27,7 @@ env:
 
 jobs:
   version:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     outputs:
       semver: ${{ steps.gitversion.outputs.semVer }}
     steps:
@@ -46,30 +46,29 @@ jobs:
           useConfigFile: true
 
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: version
     env:
-      CR_BASE: "toelke.me"
+      CR_BASE: ${{ secrets.cr }}
       GITVERSION_SEMVER: ${{ needs.version.outputs.semver }}
       GIT_COMMIT: ${{ github.sha }}
       BUILD_VERSION: ${{ needs.version.outputs.semver }}
     steps:
       #------ 
       - uses: actions/checkout@v3
-      # Disable push and login until new CR is available 
       # https://github.com/docker/login-action
-      #- name: docker login
-      #  uses: docker/login-action@v1
-      #  with:
-      #    registry: ${{ secrets.cr }}
-      #    username: ${{ secrets.cr_user }}
-      #    password: ${{ secrets.cr_token }}
+      - name: docker login
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.cr }}
+          username: ${{ secrets.cr_user }}
+          password: ${{ secrets.cr_token }}
       - name: Build container image
         run: |
           docker-compose build ${COMPONENT}
-      #    docker-compose push ${COMPONENT}
-      #- name: Retag to latest and push image
-      #  run: |
-      #    docker tag ${CR_BASE}/${COMPONENT}:${BUILD_VERSION} ${CR_BASE}/${COMPONENT}:latest
-      #    docker push ${CR_BASE}/${COMPONENT}:latest
+          docker-compose push ${COMPONENT}
+      - name: Retag to latest and push image
+        run: |
+          docker tag ${CR_BASE}/pnpmusicapp-${COMPONENT}:${BUILD_VERSION} ${CR_BASE}/pnpmusicapp-${COMPONENT}:latest
+          docker push ${CR_BASE}/pnpmusicapp-${COMPONENT}:latest
       
