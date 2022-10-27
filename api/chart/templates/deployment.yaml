@@ -26,15 +26,15 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: APP_MONGODB_HOST
-              value: ${{ .Values.mongodb.host }}
+              value: {{ .Values.mongodb.host }}
             - name: APP_MONGODB_PORT
-              value: ${{ .Values.mongodb.port }}
+              value: {{ .Values.mongodb.port }}
             - name: APP_MONGODB_USERNAME
-              value: ${{ .Values.mongodb.username }}
+              value: {{ .Values.mongodb.username }}
             - name: APP_MONGODB_PASSWORD
-              value: ${{ .Values.mongodb.password }}
+              value: {{ .Values.mongodb.password }}
             - name: APP_MONGODB_DATABASE
-              value: ${{ .Values.mongodb.database }}
+              value: {{ .Values.mongodb.database }}
           ports:
             - name: http
               containerPort: 8080
