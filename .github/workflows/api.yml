@@ -42,9 +42,10 @@ jobs:
   deploy:
     uses: Implex1v/PNPMusicApp/.github/workflows/_deploy.yml@main
     needs:
+    - version
     - build
     with:
-      version: ${{ needs.build.outputs.version }}
+      version: "${{ needs.version.outputs.semver }}"
       component: api
     secrets:
       cr: ${{ secrets.CR }}

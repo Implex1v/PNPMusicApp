@@ -8,7 +8,7 @@ on:
         type: string
         required: true
       version:
-        description: The current version
+        description: The version to build
         type: string
         required: true
     secrets:

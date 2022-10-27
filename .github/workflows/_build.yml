@@ -21,9 +21,6 @@ on:
       cr_user:
         description: The registry user
         required: true
-    outputs:
-      version:
-        value: ${{ jobs.builds.outputs.version }}
 
 defaults:
   run:
@@ -37,11 +34,9 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       CR_BASE: ${{ secrets.cr }}
-      GITVERSION_SEMVER: ${{ needs.version.outputs.semver }}
+      GITVERSION_SEMVER: ${{ inputs.version }}
       GIT_COMMIT: ${{ github.sha }}
       BUILD_VERSION: ${{ inputs.version }}
-    outputs:
-      version: ${{ steps.version.outputs.version }}
     steps:
       #------ 
       - uses: actions/checkout@v3
@@ -60,5 +55,3 @@ jobs:
         run: |
           docker tag ${CR_BASE}/pnpmusicapp-${COMPONENT}:${BUILD_VERSION} ${CR_BASE}/pnpmusicapp-${COMPONENT}:latest
           docker push ${CR_BASE}/pnpmusicapp-${COMPONENT}:latest
-      - id: version
-        run: echo "version=${BUILD_VERSION}" >> $GITHUB_OUTPUT
