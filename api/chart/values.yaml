@@ -37,7 +37,7 @@ affinity: {}
 
 mongodb:
   # app specific
-  username: pnpmusicapp
+  username: root
   host: api-mongodb
   port: 27017
   password: unset

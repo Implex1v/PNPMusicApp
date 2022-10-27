@@ -51,7 +51,6 @@ spec:
             httpGet:
               path: /actuator/health
               port: http
-
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
