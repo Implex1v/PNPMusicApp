@@ -29,7 +29,10 @@ dependencies {
 	implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
+	implementation("org.springframework.boot:spring-boot-starter-security")
+	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
+	implementation("io.micrometer:micrometer-registry-prometheus:1.9.5")
 
 	testImplementation("io.mockk:mockk:$mockkVersion")
 	testImplementation("io.projectreactor:reactor-test")

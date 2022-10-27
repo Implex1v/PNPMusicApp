@@ -7,4 +7,6 @@ spec:
     matchLabels:
       {{- include "api.selectorLabels" . | nindent 6}}
   endpoints:
-  - port: 80
+  - port: http
+    path: /actuator/prometheus
+    interval: 15s

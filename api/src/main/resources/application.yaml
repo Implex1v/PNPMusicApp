@@ -25,3 +25,9 @@ logging:
           mongodb:
             core:
               # ReactiveMongoTemplate: DEBUG # enable printing of mongo queries
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, prometheus
