@@ -50,6 +50,7 @@ mongodb:
     size: 8Gi
 
   auth:
+    rootPassword: unset
     usernames:
       - pnpmusicapp
     passwords: []

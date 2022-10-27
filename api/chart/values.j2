@@ -3,4 +3,5 @@ image:
   repository: {{ image }}
 
 mongodb:
-  password: unset
+  rootPassword: {{ mongodb_root_password }}
+  password: {{ api_mongodb_password }}

@@ -30,6 +30,9 @@ on:
       api_mongodb_password:
         description: MongoDB password
         required: true
+      mongodb_root_password:
+        description: MongoDB password
+        required: true
 
 defaults:
   run:
@@ -60,6 +63,7 @@ jobs:
             base_domain=${{ secrets.domain }}
             image=${{ secrets.cr }}/pnpmusicapp-${{ inputs.component }}
             api_mongodb_password=${{ secrets.api_mongodb_password }}
+            mongodb_root_password=${{ secrets.mongodb_root_password }}
       - name: Kubernetes deploy
         working-directory: ${{ inputs.component }}/chart
         id: helm_deploy
@@ -79,4 +83,3 @@ jobs:
             api \
             api-${VERSION}.tgz
           helm test api -n ${NAMESPACE} --logs --timeout 6m0s
-      # ---
