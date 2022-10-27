@@ -34,3 +34,32 @@ resources:
 nodeSelector: {}
 tolerations: []
 affinity: {}
+
+mongodb:
+  # app specific
+  username: pnpmusicapp
+  host: mongo
+  port: 27017
+  password: unset
+  database: pnpmusicapp
+
+  architecture: standalone
+
+  persistence:
+    enabled: true
+    size: 8Gi
+
+  auth:
+    usernames:
+      - pnpmusicapp
+    passwords: []
+    databases:
+      - pnpmusicapp
+
+  metrics:
+    # -- Enable [Prometheus metrics for MongoDb](https://artifacthub.io/packages/helm/bitnami/mongodb#metrics-parameters)
+    enabled: true
+    serviceMonitor:
+      # -- If the prometheus operator is installed in your cluster, set to true to create a Service Monitor Entry
+      enabled: true
+

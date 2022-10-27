@@ -53,3 +53,4 @@ jobs:
       cr_user: ${{ secrets.CR_USER }}
       domain: ${{ secrets.BASE_DOMAIN }}
       kube_config: ${{ secrets.KUBE_CONFIG }}
+      api_mongodb_password: ${{ secrets.API_MONGODB_PASSWORD }}

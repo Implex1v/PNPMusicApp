@@ -27,6 +27,9 @@ on:
       kube_config:
         description: The kube config
         required: true
+      api_mongodb_password:
+        description: MongoDB password
+        required: true
 
 defaults:
   run:
@@ -56,6 +59,7 @@ jobs:
           variables: |
             base_domain=${{ secrets.domain }}
             image=${{ secrets.cr }}/pnpmusicapp-${{ inputs.component }}
+            api_mongodb_password=${{ secrets.api_mongodb_password }}
       - name: Kubernetes deploy
         working-directory: ${{ inputs.component }}/chart
         id: helm_deploy
