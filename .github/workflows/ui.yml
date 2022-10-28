@@ -8,11 +8,48 @@ on:
   workflow_dispatch:
     
 jobs:
+  version:
+    runs-on: ubuntu-22.04
+    outputs:
+      semver: ${{ steps.gitversion.outputs.semVer }}
+    steps:
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0.9.13
+        with:
+          versionSpec: "5.x"
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # For gitversion
+      # https://github.com/GitTools/actions/blob/main/docs/examples/github/gitversion/index.md
+      - id: gitversion
+        name: Determine Version
+        uses: gittools/actions/gitversion/execute@v0.9.13
+        with:
+          useConfigFile: true
+
   build:
     uses: Implex1v/PNPMusicApp/.github/workflows/_build.yml@main
+    needs:
+    - version
     with:
+      version: ${{ needs.version.outputs.semver }}
       component: ui
     secrets:
       cr: ${{ secrets.CR }}
       cr_token: ${{ secrets.GITHUB_TOKEN }}
       cr_user: ${{ secrets.CR_USER }}
+
+  deploy:
+    uses: Implex1v/PNPMusicApp/.github/workflows/_deploy.yml@main
+    needs:
+    - version
+    - build
+    with:
+      version: "${{ needs.version.outputs.semver }}"
+      component: ui
+    secrets:
+      cr: ${{ secrets.CR }}
+      cr_token: ${{ secrets.GITHUB_TOKEN }}
+      cr_user: ${{ secrets.CR_USER }}
+      domain: ${{ secrets.BASE_DOMAIN }}
+      kube_config: ${{ secrets.KUBE_CONFIG }}
