@@ -20,16 +20,14 @@ ingress:
   enabled: true
   className: "public"
   annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
 
 resources:
-   requests:
-     cpu: 50m
-     memory: 128Mi
-   limits:
-     cpu: 100m
-     memory: 256Mi
+#   requests:
+#     cpu: 50m
+#     memory: 128Mi
+#   limits:
+#     cpu: 100m
+#     memory: 256Mi
 
 nodeSelector: {}
 tolerations: []
