@@ -80,6 +80,6 @@ jobs:
             --version ${VERSION} \
             -f values.yaml \
             -f values.override.yaml \
-            api \
-            api-${VERSION}.tgz
+            ${COMPONENT} \
+            ${COMPONENT}-${VERSION}.tgz
           helm test api -n ${NAMESPACE} --logs --timeout 6m0s
