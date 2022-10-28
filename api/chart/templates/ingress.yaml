@@ -13,12 +13,12 @@ metadata:
   name: {{ $fullName }}
   labels:
     {{- include "api.labels" . | nindent 4 }}
-  {{- with .Values.ingress.annotations }}
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
     cert-manager.io/cluster-issuer: letsencrypt
-    {{- toYaml . | nindent 4 }}
-  {{- end }}
+    {{- with .Values.ingress.annotations }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
 spec:
   ingressClassName: {{ .Values.ingress.className }}
   tls:
