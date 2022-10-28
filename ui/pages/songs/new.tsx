@@ -6,15 +6,17 @@ import {Song} from "../../lib/Models";
 import {useRouter} from "next/router";
 import {useState} from "react";
 import SongTags from "../../components/song/SongTags";
+import getConfig from "next/config";
 
 export default function Songs() {
     const { register, handleSubmit } = useForm();
     const router = useRouter()
     const [tags, setTags] = useState([])
+    const { publicRuntimeConfig } = getConfig()
 
     const onSubmit = async (data) => {
         try {
-            const client = new ApiClient()
+            const client = new ApiClient(publicRuntimeConfig.NEXT_API_HOST)
             const payload: Song = {
                 name: data.name,
                 tags: tags,

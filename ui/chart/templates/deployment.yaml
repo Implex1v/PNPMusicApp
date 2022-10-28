@@ -40,6 +40,9 @@ spec:
             httpGet:
               path: /
               port: http
+          env:
+            - name: APP_API_HOST
+              value: https://api.{{ .Values.baseDomain }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

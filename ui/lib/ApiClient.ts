@@ -5,7 +5,7 @@ export class ApiClient {
     public readonly song: SongClient
     public readonly playlist: PlaylistClient
 
-    constructor(baseUrl: string = "http://localhost:8080") {
+    constructor(baseUrl: string) {
         this.song = new SongClient(baseUrl)
         this.playlist = new PlaylistClient(baseUrl)
     }

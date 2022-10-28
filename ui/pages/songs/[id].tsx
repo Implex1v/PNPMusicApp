@@ -6,6 +6,7 @@ import {Song} from "../../lib/Models";
 import SongTags from "../../components/song/SongTags";
 import Head from "next/head";
 import SongDetails from "../../components/song/SongDetails";
+import getConfig from "next/config";
 
 export default function GetSong() {
     const router = useRouter()
@@ -13,6 +14,7 @@ export default function GetSong() {
     const [ song, setSong ] = useState<Song>()
     const [ ready, setReady ] = useState(false)
     const [ error, setError ] = useState<Error>(undefined)
+    const { publicRuntimeConfig } = getConfig()
 
     useEffect(() => {
         const data = async() => {
@@ -20,14 +22,14 @@ export default function GetSong() {
                 return
             }
 
-            const client = new ApiClient()
+            const client = new ApiClient(publicRuntimeConfig.NEXT_API_HOST)
             const song = await client.song.get(id)
             setSong(song)
             setReady(true)
         }
 
         data().catch(it => setError(it))
-    }, [id, router])
+    }, [id, router, publicRuntimeConfig])
 
     if(!ready) {
         return (<p>Loading ...</p>)

@@ -1,12 +1,14 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="npm run dev" type="js.build_tools.npm">
+  <configuration default="false" name="npm run dev (cluster)" type="js.build_tools.npm">
     <package-json value="$PROJECT_DIR$/package.json" />
     <command value="run" />
     <scripts>
       <script value="dev" />
     </scripts>
     <node-interpreter value="project" />
-    <envs />
+    <envs>
+      <env name="APP_API_HOST" value="https://api.music.cloud.toelke.me" />
+    </envs>
     <method v="2" />
   </configuration>
 </component>
