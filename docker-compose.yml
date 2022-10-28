@@ -5,15 +5,17 @@ x-buildargs: &build_args
   BUILD_VERSION: ${BUILD_VERSION:-'semver'}
 
 services:
-  # ui:
-  #   image: ${CR_BASE:-ghcr.io/implex1v}/pnpmusicapp-ui:${BUILD_VERSION:-latest}
-  #   restart: unless-stopped
-  #   depends_on:
-  #   - api
-  #   build:
-  #     context: ./ui/
-  #     args:
-  #       <<: *build_args
+  ui:
+    image: ${CR_BASE:-ghcr.io/implex1v}/pnpmusicapp-ui:${BUILD_VERSION:-latest}
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    depends_on:
+    - api
+    build:
+      context: ./ui/
+      args:
+        <<: *build_args
 
   api:
     image: ${CR_BASE:-ghcr.io/implex1v}/pnpmusicapp-api:${BUILD_VERSION:-latest}
