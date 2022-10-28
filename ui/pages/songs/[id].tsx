@@ -1,6 +1,6 @@
 import Layout from "../../components/Layout";
 import {useEffect, useState} from "react";
-import {ApiClient} from "../../lib/ApiClient";
+import {ApiClient, getConfiguredApiClient} from "../../lib/ApiClient";
 import {useRouter} from "next/router";
 import {Song} from "../../lib/Models";
 import SongTags from "../../components/song/SongTags";
@@ -14,7 +14,6 @@ export default function GetSong() {
     const [ song, setSong ] = useState<Song>()
     const [ ready, setReady ] = useState(false)
     const [ error, setError ] = useState<Error>(undefined)
-    const { publicRuntimeConfig } = getConfig()
 
     useEffect(() => {
         const data = async() => {
@@ -22,14 +21,14 @@ export default function GetSong() {
                 return
             }
 
-            const client = new ApiClient(publicRuntimeConfig.NEXT_API_HOST)
+            const client = await getConfiguredApiClient()
             const song = await client.song.get(id)
             setSong(song)
             setReady(true)
         }
 
         data().catch(it => setError(it))
-    }, [id, router, publicRuntimeConfig])
+    }, [id, router])
 
     if(!ready) {
         return (<p>Loading ...</p>)

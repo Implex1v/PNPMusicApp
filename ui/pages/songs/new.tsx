@@ -1,22 +1,20 @@
 import Layout from "../../components/Layout";
 import Head from "next/head";
 import {useForm} from "react-hook-form";
-import {ApiClient} from "../../lib/ApiClient";
+import {ApiClient, getConfiguredApiClient} from "../../lib/ApiClient";
 import {Song} from "../../lib/Models";
 import {useRouter} from "next/router";
 import {useState} from "react";
 import SongTags from "../../components/song/SongTags";
-import getConfig from "next/config";
 
 export default function Songs() {
     const { register, handleSubmit } = useForm();
     const router = useRouter()
     const [tags, setTags] = useState([])
-    const { publicRuntimeConfig } = getConfig()
 
     const onSubmit = async (data) => {
         try {
-            const client = new ApiClient(publicRuntimeConfig.NEXT_API_HOST)
+            const client = await getConfiguredApiClient()
             const payload: Song = {
                 name: data.name,
                 tags: tags,

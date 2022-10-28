@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import {useRouter} from "next/router";
 import {Playlist, Song} from "../../lib/Models";
 import Layout from "../../components/Layout";
-import {ApiClient} from "../../lib/ApiClient";
+import {ApiClient, getConfiguredApiClient} from "../../lib/ApiClient";
 import {ApiService} from "../../lib/ApiService";
 import Head from "next/head";
 import SongTags from "../../components/song/SongTags";
@@ -15,7 +15,6 @@ export default function GetPlaylist() {
     const [ playlist, setPlaylist ] = useState<Playlist<Song>>()
     const [ ready, setReady ] = useState(false)
     const [ error, setError ] = useState<Error>(undefined)
-    const { publicRuntimeConfig } = getConfig()
 
     useEffect(() => {
         const data = async() => {
@@ -23,14 +22,14 @@ export default function GetPlaylist() {
                 return
             }
 
-            const client = new ApiClient(publicRuntimeConfig.NEXT_API_HOST)
+            const client = await getConfiguredApiClient()
             const service = new ApiService(client)
             const playlist = await service.getFullPlaylist(id)
             setPlaylist(playlist)
             setReady(true)
         }
         data().catch((error) => setError(error))
-    }, [id, router, publicRuntimeConfig])
+    }, [id, router])
 
     if(!ready) {
         return (<p>Loading</p>)

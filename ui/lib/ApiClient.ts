@@ -1,6 +1,12 @@
 import type {Playlist, Song} from "./Models";
 import axios from "axios";
 
+export async function getConfiguredApiClient(): Promise<ApiClient> {
+    const result = await fetch("/api/config")
+    const json = await result.json()
+    return new ApiClient(json.api)
+}
+
 export class ApiClient {
     public readonly song: SongClient
     public readonly playlist: PlaylistClient

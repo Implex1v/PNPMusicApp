@@ -2,7 +2,7 @@ import Layout from "../../components/Layout";
 import Head from "next/head";
 import getConfig from "next/config"
 import {useEffect, useState} from "react";
-import {ApiClient, PageableResult} from "../../lib/ApiClient";
+import {ApiClient, getConfiguredApiClient, PageableResult} from "../../lib/ApiClient";
 import {Song} from "../../lib/Models";
 import SongRow from "../../components/song/SongRow";
 import {useRouter} from "next/router";
@@ -15,7 +15,6 @@ export default function Songs() {
     const [loading, setLoading] = useState(true)
     const [searchText, setSearchText] = useState("")
     const router = useRouter()
-    const { publicRuntimeConfig } = getConfig()
 
     useEffect(() => {
         const fetch = async () => {
@@ -26,14 +25,14 @@ export default function Songs() {
             const pageable = buildPageable(router.query)
             const filter = buildFilter(router.query)
 
-            const client = new ApiClient(publicRuntimeConfig.NEXT_API_HOST)
+            const client = await getConfiguredApiClient()
             const songs = await client.song.getAll(filter, pageable)
             setSongs(songs)
             setLoading(false)
         }
 
         fetch().then()
-    }, [router, publicRuntimeConfig])
+    }, [router])
 
     const search = async() => {
         if(searchText.length == 0) {
