@@ -1,13 +1,13 @@
 import {useState} from "react";
 
-type SongSearchTextProp = {
+type SearchInputProps = {
     search: string,
     setSearch,
     submit,
 }
 const regex = new RegExp("[A-Za-z0-9]+=[A-Za-z0-9]+(,[A-Za-z0-9]+=[A-Za-z0-9]+)*")
 
-export default function SongSearchText({search, setSearch, submit}: SongSearchTextProp) {
+export default function SearchInput({search, setSearch, submit}: SearchInputProps) {
     const [valid, setValid] = useState(null)
 
     const handleOnChange = function (event) {

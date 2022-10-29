@@ -7,7 +7,7 @@ type SongTags = {
     disabled: boolean,
 }
 
-export default function SongTags({tags, setTags, disabled = false}: SongTags) {
+export default function SongTags({tags, setTags = () => {}, disabled = false}: SongTags) {
     const changeTags = (tags) => {
         setTags(tags)
     }

@@ -1,13 +1,12 @@
 import Layout from "../../components/Layout";
 import Head from "next/head";
-import getConfig from "next/config"
 import {useEffect, useState} from "react";
 import {ApiClient, getConfiguredApiClient, PageableResult} from "../../lib/ApiClient";
 import {Song} from "../../lib/Models";
 import SongRow from "../../components/song/SongRow";
 import {useRouter} from "next/router";
 import {buildFilter, buildPageable, buildQueryFromText} from "../../lib/Helper";
-import SongSearchText from "../../components/song/SongSearchText";
+import SearchInput from "../../components/SearchInput";
 import Pagination from "../../components/Pagination";
 
 export default function Songs() {
@@ -57,15 +56,15 @@ export default function Songs() {
                 </Head>
                 <div className="m-4">
                     <h3>All Songs</h3>
-                    <SongSearchText search={searchText} setSearch={setSearchText} submit={search} />
+                    <SearchInput search={searchText} setSearch={setSearchText} submit={search} />
                     <Pagination<Song> result={songs} baseUri={"/songs"}>
                         <table className="table text-light">
                             <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Tags</th>
-                            </tr>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Tags</th>
+                                </tr>
                             </thead>
                             <tbody>
                             {data}

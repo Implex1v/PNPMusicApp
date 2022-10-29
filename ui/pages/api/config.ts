@@ -1,5 +1,3 @@
-import getConfig from "next/config";
-
 export default function config(req, res) {
     res
         .status(200)
