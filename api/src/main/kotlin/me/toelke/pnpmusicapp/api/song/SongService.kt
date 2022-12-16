@@ -1,6 +1,5 @@
 package me.toelke.pnpmusicapp.api.song
 
-import me.toelke.pnpmusicapp.api.NotFoundException
 import me.toelke.pnpmusicapp.api.config.SearchFilter
 import me.toelke.pnpmusicapp.api.song.file.FileManager
 import me.toelke.pnpmusicapp.api.song.mp3.Mp3Service
@@ -8,11 +7,11 @@ import me.toelke.pnpmusicapp.api.util.AbstractService
 import me.toelke.pnpmusicapp.api.util.PageableResult
 import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.data.domain.Pageable
+import org.springframework.http.HttpStatus
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Service
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.switchIfEmpty
+import org.springframework.web.server.ResponseStatusException
+import java.lang.Exception
 
 @Service
 class SongService(
@@ -20,35 +19,27 @@ class SongService(
     val fileManager: FileManager,
     val mp3Service: Mp3Service,
 ): AbstractService<Song>(songRepository) {
-    override fun getAll(pageable: Pageable, searchFilter: SearchFilter): Flux<PageableResult<Song>>
+    override suspend fun getAll(pageable: Pageable, searchFilter: SearchFilter): PageableResult<Song>
         = songRepository.find(pageable, searchFilter)
 
-    fun createFile(id: String, file: Mono<FilePart>): Mono<Void> {
+    suspend fun createFile(id: String, file: FilePart) {
         val fileName = "$id.mp3"
-        return fileManager.writeFile(fileName, file)
-            .then(Mono.just(fileName))
-            .flatMap {
-                val songMono = get(id)
-                    .switchIfEmpty {
-                        fileManager
-                            .deleteFile(fileName)
-                            .then(Mono.error(NotFoundException("song not found")))
-                    }
-                val detailMono = mp3Service.parseMp3(it)
 
-                Mono.zip(songMono, detailMono) { song , detail ->
-                    song.copy(detail = detail)
-                }
+        try {
+            fileManager.writeFile(fileName, file)
+            val song = get(id) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+            val detail = mp3Service.parseMp3(fileName)
+            update(song.copy(detail = detail))
+        } catch (ex: Exception) {
+            fileManager.deleteFile(fileName)
+            when (ex) {
+                is ResponseStatusException -> throw ex
+                else -> throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to upload mp3 file")
             }
-            .switchIfEmpty {
-                fileManager
-                    .deleteFile(fileName)
-                    .then(Mono.error(NotFoundException("song not found")))
-            }
-            .flatMap { song -> update(song).then() }
+        }
     }
 
-    fun getFile(id: String): Flux<DataBuffer> {
+    suspend fun getFile(id: String): List<DataBuffer> {
         val fileName = "$id.mp3"
         return fileManager.readFile(fileName)
     }

@@ -7,5 +7,5 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 interface CustomPlaylistRepository {
-    fun find(pageable: Pageable, searchFilter: SearchFilter): Flux<PageableResult<Playlist>>
+    suspend fun find(pageable: Pageable, searchFilter: SearchFilter): PageableResult<Playlist>
 }

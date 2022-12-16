@@ -11,17 +11,16 @@ import reactor.core.publisher.Mono
 class Mp3Service(
     private val fileManager: FileManager
 ) {
-    fun parseMp3(file: String): Mono<SongDetail> {
-        return try {
+    suspend fun parseMp3(file: String): SongDetail =
+        try {
             val mp3 = Mp3File(fileManager.getPath(file))
-            Mono.just(SongDetail(
+            SongDetail(
                 seconds = mp3.lengthInSeconds.toInt(),
                 artist = mp3.artist(),
                 title = mp3.title(),
                 album = mp3.album(),
-            ))
+            )
         } catch (ex: Exception) {
-            Mono.error(NoMp3Exception(ex))
+            throw NoMp3Exception(ex)
         }
-    }
 }

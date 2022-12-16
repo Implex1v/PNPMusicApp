@@ -1,24 +1,27 @@
 package me.toelke.pnpmusicapp.api.song
 
-import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContain
-import io.kotest.matchers.equality.shouldNotBeEqualToComparingFields
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import io.mockk.every
+import io.mockk.coEvery
+import io.mockk.coJustRun
+import io.mockk.justRun
 import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
 import me.toelke.pnpmusicapp.api.Helper
-import me.toelke.pnpmusicapp.api.NotFoundException
 import me.toelke.pnpmusicapp.api.config.SearchFilter
 import me.toelke.pnpmusicapp.api.util.PageableResult
 import me.toelke.pnpmusicapp.api.uuid
 import org.junit.jupiter.api.Test
 import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.data.domain.Pageable
+import org.springframework.http.HttpStatus
 import org.springframework.http.codec.multipart.FilePart
+import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.toFlux
 import reactor.test.StepVerifier
 
 @Suppress("ReactiveStreamsUnusedPublisher")
@@ -30,106 +33,113 @@ internal class SongControllerTest {
 
     @Test
     fun `should create song`() {
-        every { service.create(any()) } returns Mono.just(song.copy(id = uuid()))
+        runBlocking {
+            coEvery { service.create(any()) } returns song.copy(id = uuid())
 
-        val actual = controller.create(song).block()
+            val actual = controller.create(song)
 
-        actual shouldNotBe null
-        actual?.id shouldNotBe song.id
+            actual shouldNotBe null
+            actual?.id shouldNotBe song.id
+        }
     }
 
     @Test
     fun `should get song`() {
-        every { service.get(uuid) } returns Mono.just(song)
+        runBlocking {
+            coEvery { service.get(uuid) } returns song
 
-        val actual = controller.get(song.id).block()
+            val actual = controller.get(song.id)
 
-        actual shouldBe song
+            actual shouldBe song
+        }
     }
 
     @Test
     fun `should get no song`() {
-        every { service.get(uuid) } returns Mono.empty()
+        runBlocking {
+            coEvery { service.get(uuid) } returns null
 
-        val actual = controller.get(song.id)
-
-        StepVerifier
-            .create(actual)
-            .expectError(NotFoundException::class.java)
-            .verify()
+            shouldThrow<ResponseStatusException> {
+                controller.get(song.id)
+            }.also {
+                it.status shouldBe HttpStatus.NOT_FOUND
+            }
+        }
     }
 
     @Test
     fun `should get many songs`() {
-        val song2 = song.copy(id = uuid())
-        val result = PageableResult(listOf(song, song2).toFlux(), Mono.just(2))
-        every { service.getAll(Pageable.unpaged(), SearchFilter(emptyMap())) } returns Flux.just(result)
+        runBlocking {
+            val song2 = song.copy(id = uuid())
+            val result = PageableResult(listOf(song, song2), 2)
+            coEvery { service.getAll(Pageable.unpaged(), SearchFilter(emptyMap())) } returns result
 
-        val actual = controller.getAll(Pageable.unpaged(), SearchFilter(emptyMap()))
-        val response = actual.block()
+            val actual = controller.getAll(Pageable.unpaged(), SearchFilter(emptyMap()))
 
-        response shouldNotBe null
-        response?.headers?.get(Helper.XTotalCount)!!.first() shouldBe "2"
-        val notNull = response.body!!.collectList().block()
-        notNull!!.shouldContain(song)
-        notNull.shouldContain(song2)
+            actual shouldNotBe null
+            actual.headers[Helper.XTotalCount]!!.first() shouldBe "2"
+            val notNull = actual.body
+            notNull!!.shouldContain(song)
+            notNull.shouldContain(song2)
+        }
     }
 
     @Test
     fun `should get no songs`() {
-        val result = PageableResult(Flux.empty<Song>(), Mono.just(0))
-        every { service.getAll(Pageable.unpaged(), SearchFilter(emptyMap())) } returns Flux.just(result)
+        runBlocking {
+            val result = PageableResult(emptyList<Song>(), 0)
+            coEvery { service.getAll(Pageable.unpaged(), SearchFilter(emptyMap())) } returns result
 
-        val actual = controller.getAll(Pageable.unpaged(), SearchFilter(emptyMap()))
-        val response = actual.block()
+            val actual = controller.getAll(Pageable.unpaged(), SearchFilter(emptyMap()))
 
-        response shouldNotBe null
-        response?.headers?.get(Helper.XTotalCount)!!.first() shouldBe "0"
-        val notNull = response.body!!.collectList().block()
-        notNull!!.isEmpty() shouldBe true
+            actual shouldNotBe null
+            actual.headers[Helper.XTotalCount]!!.first() shouldBe "0"
+            val body = actual.body
+            body!!.isEmpty() shouldBe true
+        }
     }
 
     @Test
     fun `should delete song`() {
-        every { service.delete(uuid) } returns Mono.empty()
+        runBlocking {
+            coJustRun { service.delete(uuid) }
 
-        controller.delete(id = uuid).block()
+            controller.delete(id = uuid)
+        }
     }
 
     @Test
     fun `should create file`() {
-        val filePart = Mono.just(mockk<FilePart>())
-        every { service.createFile(id = uuid, filePart) } returns Mono.empty()
-
-        val actual = controller.createFile(uuid, filePart)
-        StepVerifier
-            .create(actual)
-            .expectComplete()
-            .verify()
+        runBlocking {
+            val filePart = mockk<FilePart>()
+            coJustRun { service.createFile(id = uuid, filePart) }
+            controller.createFile(uuid, Mono.just(filePart))
+        }
     }
 
     @Test
     fun `should fail on create file`() {
-        val filePart = Mono.just(mockk<FilePart>())
-        every { service.createFile(id = uuid, filePart) } returns Mono.error(NotFoundException("song"))
+        runBlocking {
+            val filePart = mockk<FilePart>()
+            coEvery { service.createFile(id = uuid, filePart) } throws ResponseStatusException(HttpStatus.NOT_FOUND)
 
-        val actual = controller.createFile(uuid, filePart)
-        StepVerifier
-            .create(actual)
-            .expectError(NotFoundException::class.java)
-            .verify()
+            shouldThrow<ResponseStatusException> {
+                controller.createFile(uuid, Mono.just(filePart))
+            }.also {
+                it.status shouldBe HttpStatus.NOT_FOUND
+            }
+        }
     }
 
     @Test
     fun `should get file`() {
-        val mock = mockk<DataBuffer>()
-        val dataBuffer = Flux.just(mock)
-        every { service.getFile(id = uuid) } returns dataBuffer
+        runBlocking {
+            val dataBuffer = listOf(mockk<DataBuffer>())
+            coEvery { service.getFile(id = uuid) } returns dataBuffer
 
-        val actual = controller.getFile(id = uuid)
-        StepVerifier
-            .create(actual)
-            .expectNext(mock)
-            .verifyComplete()
+            val actual = controller.getFile(id = uuid)
+            actual shouldHaveSize 1
+            actual.first() shouldBe dataBuffer.first()
+        }
     }
 }

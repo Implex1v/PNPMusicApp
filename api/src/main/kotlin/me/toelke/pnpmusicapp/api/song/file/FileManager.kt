@@ -1,14 +1,14 @@
 package me.toelke.pnpmusicapp.api.song.file
 
-import me.toelke.pnpmusicapp.api.NotFoundException
+import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.core.io.buffer.DefaultDataBufferFactory
+import org.springframework.http.HttpStatus
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Service
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
-import java.nio.file.NoSuchFileException
+import org.springframework.web.server.ResponseStatusException
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
 import kotlin.io.path.deleteExisting
@@ -17,31 +17,26 @@ import kotlin.io.path.deleteExisting
 class FileManager {
     private val location = "/tmp/app"
 
-    fun writeFile(fileName: String, content: Mono<FilePart>): Mono<Void> {
-        return content.flatMap {
-            val path = getPath(fileName)
-            DataBufferUtils.write(it.content(), path)
-        }
+    suspend fun writeFile(fileName: String, content: FilePart) {
+        val path = getPath(fileName)
+        DataBufferUtils.write(content.content(), path).awaitSingleOrNull()
     }
 
-    fun readFile(fileName: String): Flux<DataBuffer> {
-        return try {
+    suspend fun readFile(fileName: String): List<DataBuffer> =
+        try {
             val path = getPath(fileName)
-            DataBufferUtils.read(path, DefaultDataBufferFactory(), 4096)
-                .onErrorMap { NotFoundException("file '$fileName' not found") }
+            DataBufferUtils.read(path, DefaultDataBufferFactory(), 4096).collectList().awaitSingle()
         } catch (ex: Exception) {
-            Flux.error(NotFoundException("file '$fileName' not found"))
+            throw ResponseStatusException(HttpStatus.NOT_FOUND)
         }
-    }
 
-    fun getPath(fileName: String): Path = Path.of(location).run {
+    suspend fun getPath(fileName: String): Path = Path.of(location).run {
         createDirectories()
         resolve(fileName)
     }
 
-    fun deleteFile(fileName: String): Mono<Void> {
+    suspend fun deleteFile(fileName: String) {
         val path = getPath(fileName)
         path.deleteExisting()
-        return Mono.empty()
     }
 }

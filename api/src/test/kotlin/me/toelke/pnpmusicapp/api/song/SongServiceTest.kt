@@ -1,11 +1,15 @@
 package me.toelke.pnpmusicapp.api.song
 
+import io.kotest.assertions.throwables.shouldNotThrow
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import io.mockk.every
+import io.mockk.coEvery
+import io.mockk.coJustRun
 import io.mockk.mockk
-import me.toelke.pnpmusicapp.api.NotFoundException
+import kotlinx.coroutines.runBlocking
 import me.toelke.pnpmusicapp.api.config.SearchFilter
 import me.toelke.pnpmusicapp.api.song.file.FileManager
 import me.toelke.pnpmusicapp.api.song.mp3.Mp3Service
@@ -14,12 +18,10 @@ import me.toelke.pnpmusicapp.api.uuid
 import org.junit.jupiter.api.Test
 import org.springframework.core.io.buffer.DataBuffer
 import org.springframework.data.domain.Pageable
+import org.springframework.http.HttpStatus
 import org.springframework.http.codec.multipart.FilePart
-import reactor.core.publisher.Flux
+import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.toFlux
-import reactor.kotlin.test.expectError
-import reactor.test.StepVerifier
 
 @Suppress("ReactiveStreamsUnusedPublisher")
 internal class SongServiceTest {
@@ -33,124 +35,131 @@ internal class SongServiceTest {
 
     @Test
     fun `should create song`() {
-        every { repository.insert(any<Song>()) } returns Mono.just(song.copy(id = uuid()))
+        runBlocking {
+            coEvery { repository.insert(any<Song>()) } returns Mono.just(song.copy(id = uuid()))
 
-        val actual = service.create(song).block()
+            val actual = service.create(song)
 
-        actual shouldNotBe null
-        actual?.id shouldNotBe song.id
+            actual shouldNotBe null
+            actual.id shouldNotBe song.id
+        }
     }
 
     @Test
     fun `should get song`() {
-        every { repository.findById(uuid) } returns Mono.just(song)
+        runBlocking {
+            coEvery { repository.findById(uuid) } returns Mono.just(song)
 
-        val actual = service.get(song.id).block()
+            val actual = service.get(song.id)
 
-        actual shouldBe song
+            actual shouldBe song
+        }
     }
 
     @Test
     fun `should get no song`() {
-        every { repository.findById(uuid) } returns Mono.empty()
-
-        val actual = service.get(song.id).block()
-
-        actual shouldBe null
+        runBlocking {
+            coEvery { repository.findById(uuid) } returns Mono.empty()
+            val actual = service.get(song.id)
+            actual shouldBe null
+        }
     }
 
     @Test
     fun `should get many songs`() {
-        val song2 = song.copy(id = uuid())
-        val result = PageableResult(listOf(song, song2).toFlux(), Mono.just(2))
-        every { repository.find(Pageable.unpaged(), SearchFilter(emptyMap())) } returns Flux.just(result)
+        runBlocking {
+            val song2 = song.copy(id = uuid())
+            val result = PageableResult(listOf(song, song2), 2)
+            coEvery { repository.find(Pageable.unpaged(), SearchFilter(emptyMap())) } returns result
 
-        val actual = service.getAll(Pageable.unpaged(), SearchFilter(emptyMap())).blockFirst()!!
+            val actual = service.getAll(Pageable.unpaged(), SearchFilter(emptyMap()))
 
-        actual shouldNotBe null
-        actual.total.block() shouldBe 2
-        val items = actual.items.collectList().block()!!
-        items shouldContain song
-        items shouldContain song2
+            actual shouldNotBe null
+            actual.total shouldBe 2
+            val items = actual.items
+            items shouldContain song
+            items shouldContain song2
+        }
     }
 
     @Test
     fun `should get no songs`() {
-        val result = PageableResult(Flux.empty<Song>(), Mono.just(0))
-        every { repository.find(Pageable.unpaged(), SearchFilter(emptyMap())) } returns Flux.just(result)
+        runBlocking {
+            val result = PageableResult(emptyList<Song>(), 0)
+            coEvery { repository.find(Pageable.unpaged(), SearchFilter(emptyMap())) } returns result
 
-        val actual = service.getAll(Pageable.unpaged(), SearchFilter(emptyMap())).blockFirst()!!
+            val actual = service.getAll(Pageable.unpaged(), SearchFilter(emptyMap()))
 
-        actual.total.block() shouldBe 0
-        actual.items.collectList().block()!!.isEmpty() shouldBe true
+            actual.total shouldBe 0
+            actual.items shouldHaveSize 0
+        }
     }
 
     @Test
     fun `should delete song`() {
-        every { repository.deleteById(uuid) } returns Mono.empty()
-
-        service.delete(id = uuid).block()
+        runBlocking {
+            coEvery { repository.deleteById(uuid) } returns Mono.empty()
+            service.delete(id = uuid)
+        }
     }
 
     @Test
     fun `should get file`() {
-        val fileName = "abc"
-        val dataFlux = mockk<DataBuffer>()
-        val flux = Flux.just(dataFlux)
-        every { manager.readFile("$fileName.mp3") } returns flux
+        runBlocking {
+            val fileName = "abc"
+            val dataFlux = mockk<DataBuffer>()
+            coEvery { manager.readFile("$fileName.mp3") } returns listOf(dataFlux)
 
-        val actual = service.getFile(fileName)
-
-        StepVerifier
-            .create(actual)
-            .expectNext(dataFlux)
-            .verifyComplete()
+            val actual = service.getFile(fileName)
+            actual shouldHaveSize 1
+        }
     }
 
     @Test
     fun `should error on file`() {
-        val fileName = "abc"
-        every { manager.readFile("$fileName.mp3") } returns Flux.error(NotFoundException("file"))
+        runBlocking {
+            val fileName = "abc"
+            coEvery { manager.readFile("$fileName.mp3") } throws (ResponseStatusException(HttpStatus.NOT_FOUND))
 
-        val actual = service.getFile(fileName)
-
-        StepVerifier
-            .create(actual)
-            .expectError(NotFoundException::class)
-            .verify()
+            shouldThrow<ResponseStatusException> {
+                service.getFile(fileName)
+            }.also {
+                it.status shouldBe HttpStatus.NOT_FOUND
+            }
+        }
     }
 
     @Test
     fun `should create file`() {
-        val filePart = mockk<FilePart>()
-        val filePartMono = Mono.just(filePart)
-        every { manager.writeFile("$uuid.mp3", filePartMono) } returns Mono.empty()
-        every { repository.findById(uuid) } returns Mono.just(song)
-        every { mp3Service.parseMp3("$uuid.mp3") } returns Mono.just(detail)
-        every { repository.save(song.copy(detail = detail)) } returns Mono.empty()
+        runBlocking {
+            val filePart = mockk<FilePart>()
+            coJustRun { manager.writeFile("$uuid.mp3", filePart) }
+            coEvery { repository.findById(uuid) } returns Mono.just(song)
+            coEvery { mp3Service.parseMp3("$uuid.mp3") } returns detail
+            coEvery { repository.save(song.copy(detail = detail)) } returns Mono.just(song)
 
-        val actual = service.createFile(id = uuid, filePartMono)
-
-        StepVerifier
-            .create(actual)
-            .verifyComplete()
+            shouldNotThrow<Exception> {
+                service.createFile(id = uuid, filePart)
+            }
+        }
     }
 
     @Test
     fun `should fail on song not found`() {
-        val filePart = mockk<FilePart>()
-        val filePartMono = Mono.just(filePart)
-        val fileName = "$uuid.mp3"
-        every { manager.writeFile(fileName, filePartMono) } returns Mono.empty()
-        every { repository.findById(uuid) } returns Mono.empty()
-        every { mp3Service.parseMp3(fileName) } returns Mono.just(detail)
-        every { manager.deleteFile(fileName) } returns Mono.empty()
+        runBlocking {
+            val filePart = mockk<FilePart>()
+            val fileName = "$uuid.mp3"
 
-        val actual = service.createFile(id = uuid, filePartMono)
+            coJustRun { manager.writeFile(fileName, filePart) }
+            coJustRun { manager.deleteFile(fileName) }
+            coEvery { repository.findById(uuid) } returns Mono.empty()
+            coEvery { mp3Service.parseMp3(fileName) } returns detail
 
-        StepVerifier
-            .create(actual)
-            .expectError(NotFoundException::class)
-            .verify()
+            shouldThrow<ResponseStatusException> {
+                service.createFile(id = uuid, filePart)
+            }.also {
+                it.status shouldBe HttpStatus.NOT_FOUND
+            }
+        }
     }
 }

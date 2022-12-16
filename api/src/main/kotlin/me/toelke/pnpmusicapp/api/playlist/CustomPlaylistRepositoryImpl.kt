@@ -11,6 +11,6 @@ import reactor.core.publisher.Mono
 class CustomPlaylistRepositoryImpl(
     template: ReactiveMongoTemplate
 ): CustomPlaylistRepository, AbstractPageableRepository<Playlist>(template) {
-    override fun find(pageable: Pageable, searchFilter: SearchFilter): Flux<PageableResult<Playlist>>
+    override suspend fun find(pageable: Pageable, searchFilter: SearchFilter): PageableResult<Playlist>
         = find(pageable, searchFilter, Playlist::class.java)
 }
